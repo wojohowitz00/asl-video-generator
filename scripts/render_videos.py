@@ -7,9 +7,10 @@ Usage:
 
 import argparse
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 
-from asl_video_generator.avatar_renderer import AvatarRenderer, RenderConfig, render_batch
+from asl_video_generator.avatar_renderer import AvatarRenderer, RenderConfig
 
 
 def main() -> None:
@@ -67,21 +68,27 @@ def main() -> None:
         background_color=(255, 255, 255)
     )
     
-    # Process manifest to keep track of rendered files
+    # Pose manifest contains curriculum metadata (scenario/difficulty/text) and
+    # optionally gloss tokens. We'll merge it into a video manifest that matches
+    # the learning app's expected schema.
     manifest_path = args.input / "manifest.json"
-    manifest_data = []
+    manifest_items: list[dict] = []
     if manifest_path.exists():
-        manifest_data = json.loads(manifest_path.read_text())
+        raw = json.loads(manifest_path.read_text())
+        if isinstance(raw, list):
+            manifest_items = raw
+        elif isinstance(raw, dict) and isinstance(raw.get("items"), list):
+            manifest_items = raw["items"]
     
     # Render videos
     renderer = AvatarRenderer(config)
     args.output.mkdir(parents=True, exist_ok=True)
     
     rendered_count = 0
-    updated_manifest = []
+    updated_items: list[dict] = []
     
     # Map ID to manifest entry
-    manifest_map = {item["id"]: item for item in manifest_data}
+    manifest_map = {item.get("id"): item for item in manifest_items if item.get("id")}
     
     for json_path in args.input.glob("*.json"):
         if json_path.name == "manifest.json":
@@ -99,13 +106,50 @@ def main() -> None:
             print(f"Rendering {pose_id}...")
             renderer.render_poses(json_path, output_path)
             rendered_count += 1
-            
-            # Update manifest entry with video path
-            if pose_id in manifest_map:
-                entry = manifest_map[pose_id]
-                entry["video_path"] = str(output_path)
-                entry["video_url"] = f"https://cdn.example.com/asl-content/{pose_id}.{args.format}" # Placeholder
-                updated_manifest.append(entry)
+
+            base = manifest_map.get(pose_id, {})
+
+            # Fallback to reading the pose JSON for fields if the pose manifest
+            # doesn't include them (older runs).
+            pose_meta: dict = {}
+            if not base.get("text") or not base.get("duration_ms") or not base.get("gloss"):
+                try:
+                    pose_meta = json.loads(json_path.read_text())
+                except Exception:
+                    pose_meta = {}
+
+            english_text = (
+                base.get("text")
+                or base.get("englishText")
+                or pose_meta.get("english")
+                or pose_id
+            )
+            gloss = base.get("gloss") or pose_meta.get("gloss") or []
+            duration_ms = (
+                base.get("duration_ms")
+                or base.get("durationMs")
+                or pose_meta.get("total_duration_ms")
+                or 0
+            )
+
+            item_version = "1.0.0"
+            updated_items.append(
+                {
+                    "id": pose_id,
+                    "type": "video",
+                    # Filled in by scripts/upload_to_s3.py
+                    "remoteUrl": "",
+                    "scenario": base.get("scenario") or "unknown",
+                    "difficulty": base.get("difficulty") or "beginner",
+                    "englishText": english_text,
+                    "gloss": gloss,
+                    "durationMs": duration_ms,
+                    "sizeBytes": output_path.stat().st_size if output_path.exists() else None,
+                    "version": item_version,
+                    # Local-only fields (stripped before publishing)
+                    "localVideoPath": str(output_path),
+                }
+            )
                 
         except Exception as e:
             print(f"Error rendering {pose_id}: {e}")
@@ -114,12 +158,13 @@ def main() -> None:
 
     # Save updated manifest to video output dir
     video_manifest_path = args.output / "manifest.json"
+    now = datetime.now(timezone.utc).isoformat()
     video_manifest_content = {
         "version": "1.0.0",
-        "updatedAt": "2024-05-23T12:00:00Z", # Should be dynamic
-        "totalItems": len(updated_manifest),
-        "scenarios": list(set(item["scenario"] for item in updated_manifest if "scenario" in item)),
-        "items": updated_manifest
+        "updatedAt": now,
+        "totalItems": len(updated_items),
+        "scenarios": sorted({item.get("scenario") for item in updated_items if item.get("scenario")}),
+        "items": updated_items,
     }
     video_manifest_path.write_text(json.dumps(video_manifest_content, indent=2))
     

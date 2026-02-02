@@ -1,6 +1,12 @@
-"""Parse lesson scripts from the 500 sentences curriculum."""
+"""Parse lesson scripts from the 500 sentences curriculum.
+
+This is used by the generator pipeline to produce pose/video manifests that the
+learning app can consume. To keep the generator repo self-contained, the
+default curriculum file lives under ``assets/lessons`` in this repo.
+"""
 
 import re
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
@@ -42,11 +48,14 @@ class LessonParser:
     def __init__(self, file_path: str | Path | None = None):
         """Initialize parser with the lesson file path."""
         if file_path is None:
-            # Default path
-            file_path = Path(__file__).parent.parent.parent.parent / (
-                "ASL-Immersion-Companion/attached_assets/"
-                "500_Sentences_1769817458445.md"
-            )
+            # Allow an environment override so CI/users can point at any path.
+            env_path = os.environ.get("ASL_LESSONS_PATH")
+            if env_path:
+                file_path = Path(env_path)
+            else:
+                # Default to the generator repo's curriculum asset.
+                repo_root = Path(__file__).resolve().parents[2]
+                file_path = repo_root / "assets" / "lessons" / "500_Sentences_1769817458445.md"
         self.file_path = Path(file_path)
     
     def parse(self) -> list[LessonScenario]:

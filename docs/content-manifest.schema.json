@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SignSpeak Content Manifest",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["version", "updatedAt", "totalItems", "scenarios", "items"],
+  "properties": {
+    "version": { "type": "string" },
+    "updatedAt": { "type": "string", "format": "date-time" },
+    "totalItems": { "type": "integer", "minimum": 0 },
+    "scenarios": { "type": "array", "items": { "type": "string" } },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "id",
+          "type",
+          "remoteUrl",
+          "scenario",
+          "difficulty",
+          "englishText",
+          "gloss",
+          "durationMs",
+          "version"
+        ],
+        "properties": {
+          "id": { "type": "string" },
+          "type": { "type": "string", "enum": ["video", "animation", "pose"] },
+          "remoteUrl": { "type": "string" },
+          "scenario": { "type": "string" },
+          "difficulty": {
+            "type": "string",
+            "enum": ["beginner", "intermediate", "advanced"]
+          },
+          "englishText": { "type": "string" },
+          "gloss": { "type": "array", "items": { "type": "string" } },
+          "durationMs": { "type": "integer", "minimum": 0 },
+          "sizeBytes": { "type": "integer", "minimum": 0 },
+          "version": { "type": "string" }
+        }
+      }
+    }
+  }
+}
+

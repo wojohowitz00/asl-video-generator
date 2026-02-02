@@ -15,6 +15,7 @@ import argparse
 import json
 import os
 import mimetypes
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -95,18 +96,32 @@ def main() -> None:
         print(f"Error: Manifest not found at {manifest_path}")
         return
         
-    manifest_data = json.loads(manifest_path.read_text())
+    raw_manifest = json.loads(manifest_path.read_text())
+    if isinstance(raw_manifest, list):
+        manifest_data: dict = {"version": "1.0.0", "items": raw_manifest}
+    else:
+        manifest_data = raw_manifest
+
+    manifest_version = str(manifest_data.get("version") or "1.0.0")
     items = manifest_data.get("items", [])
     updated_items = []
     
     print(f"Processing {len(items)} items from manifest...")
     
     for item in items:
+        if not item.get("id"):
+            continue
+
         # Check if video file exists locally
-        local_video_path = Path(item.get("video_path", ""))
+        local_video_path = Path(
+            item.get("localVideoPath")
+            or item.get("video_path")
+            or item.get("videoPath")
+            or ""
+        )
         
         # Determine filename for upload
-        filename = f"{item['id']}.mp4" # Assuming MP4
+        filename = f"{item['id']}.mp4"  # Default/assumption
         if local_video_path.exists():
             filename = local_video_path.name
         else:
@@ -130,12 +145,28 @@ def main() -> None:
             else:
                 url = f"https://{args.bucket}.s3.{args.region}.amazonaws.com/{s3_key}"
                 
+            # Normalize to the learning app's expected schema.
+            item["type"] = item.get("type") or "video"
             item["remoteUrl"] = url
-            # Remove local path from manifest for public distribution
-            if "video_path" in item:
-                del item["video_path"]
-            if "video_url" in item: # Remove legacy/placeholder
-                del item["video_url"]
+            item["englishText"] = item.get("englishText") or item.get("text") or ""
+            item["durationMs"] = item.get("durationMs") or item.get("duration_ms") or 0
+            item["gloss"] = item.get("gloss") or []
+            item["version"] = item.get("version") or manifest_version
+            item["sizeBytes"] = local_video_path.stat().st_size
+
+            # Remove local-only / legacy fields from the published manifest
+            for key in (
+                "localVideoPath",
+                "video_path",
+                "video_url",
+                "videoPath",
+                "text",
+                "duration_ms",
+                "path",
+                "frames",
+            ):
+                if key in item:
+                    del item[key]
                 
             updated_items.append(item)
         else:
@@ -144,7 +175,10 @@ def main() -> None:
             
     # Update manifest content
     manifest_data["items"] = updated_items
-    manifest_data["updatedAt"] = "now" # TODO: usage real datetime
+    manifest_data["version"] = manifest_version
+    manifest_data["updatedAt"] = datetime.now(timezone.utc).isoformat()
+    manifest_data["totalItems"] = len(updated_items)
+    manifest_data["scenarios"] = sorted({i.get("scenario") for i in updated_items if i.get("scenario")})
     
     # Save updated manifest locally first
     updated_manifest_path = args.input / "manifest_public.json"
@@ -159,7 +193,7 @@ def main() -> None:
             manifest_url = f"https://{args.bucket}.s3.{args.region}.amazonaws.com/{manifest_key}"
             
         print(f"\nSuccess! Manifest uploaded to: {manifest_url}")
-        print("Update your app config with this manifest URL.")
+        print(f"Set EXPO_PUBLIC_CONTENT_MANIFEST_URL to this URL in the learning app.")
     else:
         print("Failed to upload manifest.")
 

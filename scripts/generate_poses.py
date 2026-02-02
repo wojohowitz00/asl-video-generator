@@ -7,9 +7,11 @@ Usage:
 
 import argparse
 import json
+import os
 from pathlib import Path
 
 from asl_video_generator import LessonParser, PoseGenerator
+from asl_video_generator.gloss_translator import GlossSequence
 
 
 def main() -> None:
@@ -44,8 +46,17 @@ def main() -> None:
     parser.add_argument(
         "--lessons-path",
         type=Path,
-        default=Path(__file__).parent.parent.parent / 
-            "ASL-Immersion-Companion/attached_assets/500_Sentences_1769817458445.md",
+        default=Path(
+            os.environ.get(
+                "ASL_LESSONS_PATH",
+                str(
+                    Path(__file__).resolve().parents[1]
+                    / "assets"
+                    / "lessons"
+                    / "500_Sentences_1769817458445.md"
+                ),
+            )
+        ),
         help="Path to lesson sentences markdown file"
     )
     
@@ -69,16 +80,31 @@ def main() -> None:
     print(f"Processing {len(sentences)} sentences...")
     
     # Generate poses
-    generator = PoseGenerator(use_placeholder=True)
+    generator = PoseGenerator()
     args.output.mkdir(parents=True, exist_ok=True)
     
     results = []
     for i, sentence in enumerate(sentences):
-        pose = generator.generate(
-            english=sentence["text"],
-            gloss=None,  # Will auto-generate from text
+        # Keep this script runnable without LLM credentials by using a simple
+        # uppercase tokenization as a stand-in for a gloss sequence.
+        gloss_tokens = (
+            sentence["text"]
+            .upper()
+            .replace("?", "")
+            .replace("!", "")
+            .replace(".", "")
+            .replace(",", "")
+            .replace("\u2019", "")
+            .replace("'", "")
+            .split()
         )
-        pose.difficulty = sentence["difficulty"]
+        gloss_seq = GlossSequence(
+            english=sentence["text"],
+            gloss=gloss_tokens,
+            estimated_duration_ms=len(gloss_tokens) * 500,
+            difficulty=sentence["difficulty"],
+        )
+        pose = generator.generate(gloss_seq)
         
         output_path = args.output / f"{sentence['id']}.json"
         pose.save(output_path)
@@ -86,10 +112,12 @@ def main() -> None:
         results.append({
             "id": sentence["id"],
             "text": sentence["text"],
+            "gloss": pose.gloss,
             "scenario": sentence["scenario"],
             "difficulty": sentence["difficulty"],
             "frames": len(pose.frames),
             "duration_ms": pose.total_duration_ms,
+            "missing_signs": pose.missing_signs,
             "path": str(output_path),
         })
         
