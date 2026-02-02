@@ -1,0 +1,92 @@
+[
+  {
+    "id": "around_the_house_(family_&_daily_life)_001",
+    "text": "Good morning! Did you sleep well?",
+    "scenario": "Around the House (Family & Daily Life)",
+    "difficulty": "intermediate",
+    "frames": 90,
+    "duration_ms": 3000,
+    "path": "output/poses/around_the_house_(family_&_daily_life)_001.json"
+  },
+  {
+    "id": "around_the_house_(family_&_daily_life)_002",
+    "text": "I hit the snooze button three times.",
+    "scenario": "Around the House (Family & Daily Life)",
+    "difficulty": "intermediate",
+    "frames": 105,
+    "duration_ms": 3500,
+    "path": "output/poses/around_the_house_(family_&_daily_life)_002.json"
+  },
+  {
+    "id": "around_the_house_(family_&_daily_life)_003",
+    "text": "I need to wake up early tomorrow.",
+    "scenario": "Around the House (Family & Daily Life)",
+    "difficulty": "intermediate",
+    "frames": 105,
+    "duration_ms": 3500,
+    "path": "output/poses/around_the_house_(family_&_daily_life)_003.json"
+  },
+  {
+    "id": "around_the_house_(family_&_daily_life)_004",
+    "text": "The alarm didn't go off.",
+    "scenario": "Around the House (Family & Daily Life)",
+    "difficulty": "beginner",
+    "frames": 75,
+    "duration_ms": 2500,
+    "path": "output/poses/around_the_house_(family_&_daily_life)_004.json"
+  },
+  {
+    "id": "around_the_house_(family_&_daily_life)_005",
+    "text": "Can you make the coffee?",
+    "scenario": "Around the House (Family & Daily Life)",
+    "difficulty": "beginner",
+    "frames": 75,
+    "duration_ms": 2500,
+    "path": "output/poses/around_the_house_(family_&_daily_life)_005.json"
+  },
+  {
+    "id": "around_the_house_(family_&_daily_life)_006",
+    "text": "Is the bathroom free?",
+    "scenario": "Around the House (Family & Daily Life)",
+    "difficulty": "beginner",
+    "frames": 60,
+    "duration_ms": 2000,
+    "path": "output/poses/around_the_house_(family_&_daily_life)_006.json"
+  },
+  {
+    "id": "around_the_house_(family_&_daily_life)_007",
+    "text": "I need to brush my teeth.",
+    "scenario": "Around the House (Family & Daily Life)",
+    "difficulty": "intermediate",
+    "frames": 90,
+    "duration_ms": 3000,
+    "path": "output/poses/around_the_house_(family_&_daily_life)_007.json"
+  },
+  {
+    "id": "around_the_house_(family_&_daily_life)_008",
+    "text": "Where is the toothpaste?",
+    "scenario": "Around the House (Family & Daily Life)",
+    "difficulty": "beginner",
+    "frames": 60,
+    "duration_ms": 2000,
+    "path": "output/poses/around_the_house_(family_&_daily_life)_008.json"
+  },
+  {
+    "id": "around_the_house_(family_&_daily_life)_009",
+    "text": "Don't use all the hot water!",
+    "scenario": "Around the House (Family & Daily Life)",
+    "difficulty": "intermediate",
+    "frames": 90,
+    "duration_ms": 3000,
+    "path": "output/poses/around_the_house_(family_&_daily_life)_009.json"
+  },
+  {
+    "id": "around_the_house_(family_&_daily_life)_010",
+    "text": "Can you hand me a towel?",
+    "scenario": "Around the House (Family & Daily Life)",
+    "difficulty": "intermediate",
+    "frames": 90,
+    "duration_ms": 3000,
+    "path": "output/poses/around_the_house_(family_&_daily_life)_010.json"
+  }
+]
