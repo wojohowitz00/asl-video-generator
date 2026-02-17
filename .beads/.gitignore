@@ -38,6 +38,14 @@ beads.right.meta.json
 .sync.lock
 sync_base.jsonl
 
+# Dolt backend runtime/local artifacts
+dolt/
+dolt-access.lock
+
+# JSONL lock and transient export state
+.jsonl.lock
+export-state/
+
 # NOTE: Do NOT add negation patterns (e.g., !issues.jsonl) here.
 # They would override fork protection in .git/info/exclude, allowing
 # contributors to accidentally commit upstream issue databases.

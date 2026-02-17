@@ -1,0 +1,44 @@
+name: Quality Gates
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install dependencies
+        run: uv sync --extra dev
+
+      - name: Run test suite
+        run: uv run --extra dev python -m pytest -q
+
+      - name: Run ruff checks (productionized mesh pipeline scope)
+        run: |
+          uv run --extra dev ruff check \
+            src/asl_video_generator/avatar_renderer.py \
+            src/asl_video_generator/vocabulary_generator.py \
+            tests/test_avatar_renderer_mesh.py \
+            tests/test_mesh_pipeline_e2e.py \
+            tests/test_vocabulary_generator.py
+
+      - name: Run mypy checks (productionized mesh pipeline scope)
+        run: |
+          uv run --extra dev mypy --follow-imports=skip \
+            src/asl_video_generator/vocabulary_generator.py

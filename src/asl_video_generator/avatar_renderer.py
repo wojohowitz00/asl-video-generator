@@ -108,8 +108,8 @@ class AvatarRenderer:
         """Render poses as video using PIL + imageio."""
         try:
             import imageio
-            from PIL import Image, ImageDraw
             import numpy as np
+            from PIL import Image, ImageDraw
         except ImportError:
             print("Warning: imageio/PIL not available, saving as frames")
             return self._render_pose_frames(frames, output_path.parent / "frames")
@@ -170,27 +170,131 @@ class AvatarRenderer:
     ) -> Path:
         """Render mesh frames as individual images."""
         output_dir.mkdir(parents=True, exist_ok=True)
-        
-        # TODO: Implement 3D mesh rendering with PyRender or Blender
-        # For now, create placeholder frames
+
         for i, frame in enumerate(frames):
             frame_path = output_dir / f"frame_{i:05d}.png"
-            self._draw_mesh_placeholder(frame, frame_path)
-        
+            self._draw_mesh_placeholder(frame, frame_path, i, len(frames))
+
         return output_dir
     
     def _render_mesh_video(
         self, frames: list[dict], output_path: Path, metadata: dict
     ) -> Path:
         """Render mesh animation as video."""
-        # TODO: Implement actual mesh rendering
-        # For now, render as frames and combine
-        frames_dir = output_path.parent / f"{output_path.stem}_frames"
-        self._render_mesh_frames(frames, frames_dir)
-        
-        # TODO: Use ffmpeg to combine frames
-        print(f"TODO: Combine frames from {frames_dir} to {output_path}")
-        return frames_dir
+        try:
+            import imageio
+        except ImportError:
+            print("Warning: imageio not available, exporting mesh frames instead")
+            frames_dir = output_path.parent / f"{output_path.stem}_frames"
+            return self._render_mesh_frames(frames, frames_dir)
+
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        fps = int(metadata.get("fps", self.config.fps))
+        if fps <= 0:
+            fps = self.config.fps
+
+        writer = None
+        try:
+            if output_path.suffix.lower() == ".gif":
+                writer = imageio.get_writer(str(output_path), duration=1000.0 / fps)
+            else:
+                writer = imageio.get_writer(str(output_path), fps=fps)
+            for i, frame in enumerate(frames):
+                img = self._build_mesh_image(frame, i, len(frames))
+                writer.append_data(np.array(img))
+            return output_path
+        except Exception as e:
+            print(f"Error rendering mesh video: {e}. Exporting frames instead.")
+            frames_dir = output_path.parent / f"{output_path.stem}_frames"
+            self._render_mesh_frames(frames, frames_dir)
+            return frames_dir
+        finally:
+            if writer is not None:
+                writer.close()
+
+    def _sample_pose_values(self, values: list[float], count: int) -> np.ndarray:
+        """Downsample or upsample pose coefficients to a fixed count."""
+        if count <= 0:
+            return np.array([], dtype=np.float64)
+
+        if not values:
+            return np.zeros(count, dtype=np.float64)
+
+        array = np.asarray(values, dtype=np.float64)
+        if array.size == 1:
+            return np.repeat(array, count)
+
+        source_index = np.arange(array.size, dtype=np.float64)
+        target_index = np.linspace(0.0, float(array.size - 1), num=count)
+        return np.interp(target_index, source_index, array)
+
+    def _build_mesh_image(self, frame: dict, frame_index: int, total_frames: int):
+        """Create a stylized mesh visualization frame as a PIL image."""
+        from PIL import Image, ImageDraw
+
+        img = Image.new(
+            "RGB",
+            (self.config.width, self.config.height),
+            self.config.background_color,
+        )
+        draw = ImageDraw.Draw(img)
+
+        center_x = self.config.width // 2
+        center_y = self.config.height // 2
+
+        translation = frame.get("translation", [0.0, 0.0, 0.0])
+        if isinstance(translation, (list, tuple)) and len(translation) == 3:
+            center_x += int(float(translation[0]) * self.config.width * 0.45)
+            center_y -= int(float(translation[2]) * self.config.height * 0.25)
+
+        body_signal = self._sample_pose_values(frame.get("body_pose", []), 10)
+        left_signal = self._sample_pose_values(frame.get("left_hand_pose", []), 15)
+        right_signal = self._sample_pose_values(frame.get("right_hand_pose", []), 15)
+
+        body_points: list[tuple[int, int]] = []
+        for i, value in enumerate(body_signal):
+            y = int(center_y - 80 + i * 16)
+            x = int(center_x + float(value) * 45)
+            body_points.append((x, y))
+
+        if len(body_points) > 1:
+            draw.line(body_points, fill=(80, 80, 80), width=4)
+        for x, y in body_points:
+            draw.ellipse([x - 3, y - 3, x + 3, y + 3], fill=(120, 120, 120))
+
+        left_anchor = (center_x - 36, center_y - 36)
+        right_anchor = (center_x + 36, center_y - 36)
+
+        left_points = [left_anchor]
+        for i, value in enumerate(left_signal):
+            angle = np.pi * (0.8 + (i / max(len(left_signal), 1)) * 0.5)
+            radius = 12 + i * 3 + abs(float(value)) * 8
+            x = int(left_anchor[0] + np.cos(angle) * radius)
+            y = int(left_anchor[1] + np.sin(angle) * radius)
+            left_points.append((x, y))
+
+        right_points = [right_anchor]
+        for i, value in enumerate(right_signal):
+            angle = np.pi * (-0.3 + (i / max(len(right_signal), 1)) * 0.5)
+            radius = 12 + i * 3 + abs(float(value)) * 8
+            x = int(right_anchor[0] + np.cos(angle) * radius)
+            y = int(right_anchor[1] + np.sin(angle) * radius)
+            right_points.append((x, y))
+
+        if len(left_points) > 1:
+            draw.line(left_points, fill=(20, 140, 220), width=2)
+        if len(right_points) > 1:
+            draw.line(right_points, fill=(220, 90, 60), width=2)
+
+        draw.ellipse(
+            [center_x - 20, center_y - 120, center_x + 20, center_y - 80],
+            outline=(90, 90, 90),
+            width=3,
+            fill=(235, 235, 235),
+        )
+
+        draw.text((8, 8), f"Mesh frame {frame_index + 1}/{max(total_frames, 1)}", fill=(0, 0, 0))
+        return img
     
     def _draw_skeleton_frame(self, frame: dict, output_path: Path) -> None:
         """Draw a single skeleton frame to image."""
@@ -218,28 +322,19 @@ class AvatarRenderer:
         
         img.save(output_path)
     
-    def _draw_mesh_placeholder(self, frame: dict, output_path: Path) -> None:
-        """Draw placeholder for mesh frame."""
+    def _draw_mesh_placeholder(
+        self,
+        frame: dict,
+        output_path: Path,
+        frame_index: int = 0,
+        total_frames: int = 1,
+    ) -> None:
+        """Draw a mesh visualization frame to image."""
         try:
-            from PIL import Image, ImageDraw
+            img = self._build_mesh_image(frame, frame_index, total_frames)
         except ImportError:
             return
-        
-        img = Image.new('RGB', (self.config.width, self.config.height),
-                       self.config.background_color)
-        draw = ImageDraw.Draw(img)
-        
-        # Draw simple avatar silhouette
-        center_x = self.config.width // 2
-        center_y = self.config.height // 2
-        
-        # Head
-        draw.ellipse([center_x-30, center_y-100, center_x+30, center_y-40], 
-                    fill='gray')
-        # Body
-        draw.rectangle([center_x-40, center_y-40, center_x+40, center_y+60],
-                      fill='gray')
-        
+
         img.save(output_path)
     
     def export_threejs(

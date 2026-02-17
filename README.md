@@ -14,8 +14,17 @@ English Text → LLM (GPT-4o/Gemini) → ASL Gloss → SignGen → Video
 # Install dependencies
 uv sync
 
-# Run the generator
-uv run generate-asl --input "Hello, how are you?"
+# Full pipeline (text -> gloss -> poses -> video)
+uv run asl-generate "Hello, how are you?" --output ./output/hello.mp4
+
+# Translate only
+uv run asl-translate "Where is the library?" --format json --output ./output/library.gloss.json
+
+# Pose generation only
+uv run asl-pose ./output/library.gloss.json --output ./output/library.poses.json
+
+# Render only
+uv run asl-render ./output/library.poses.json --output ./output/library.mp4 --mode skeleton
 ```
 
 ## Curriculum Source
@@ -36,20 +45,22 @@ The learning app should set `EXPO_PUBLIC_CONTENT_MANIFEST_URL` to the uploaded
 
 - `gloss_translator.py` - LLM-based English→ASL gloss translation
 - `lesson_parser.py` - Parse 500 lesson sentences from curriculum
-- `video_generator.py` - SignGen integration for avatar video generation
+- `pose_generator.py` - Generate pose sequences from ASL gloss
+- `diffusion_renderer.py` - Render videos from pose sequences
+- `avatar_renderer.py` - Render skeletal/mesh animations to video
 - `cli.py` - Command-line interface
 
 ## Usage
 
 ```python
-from asl_video_generator import GlossTranslator, VideoGenerator
+from asl_video_generator import generate_asl_video
 
-# Translate English to ASL gloss
-translator = GlossTranslator()
-gloss = translator.translate("Good morning!")
-# Output: {"gloss": ["GOOD", "MORNING"], "nmm": {"facial": "neutral"}}
-
-# Generate video
-generator = VideoGenerator()
-video_path = generator.generate(gloss)
+# Generate a video from English text
+video_path = generate_asl_video(
+    "Good morning!",
+    output_path="good_morning.mp4",
+    provider="openai",
+    render_mode="skeleton",
+)
+print(video_path)
 ```

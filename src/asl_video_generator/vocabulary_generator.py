@@ -4,10 +4,11 @@ This module provides word-level 3D mesh motion generation for vocabulary
 learning using the wSignGen transformer-diffusion model.
 """
 
+import hashlib
 import json
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 import numpy as np
 
@@ -39,7 +40,7 @@ class VocabularyMotion:
     total_duration_ms: int = 0
     mesh_format: Literal["smpl", "smplh", "smplx"] = "smplh"
     
-    def to_json(self) -> dict:
+    def to_json(self) -> dict[str, Any]:
         """Convert to JSON-serializable format."""
         return {
             "word": self.word,
@@ -119,6 +120,8 @@ class VocabularyGenerator:
         "more": "MORE",
         "done": "DONE",
     }
+
+    _MESH_FORMATS: set[str] = {"smpl", "smplh", "smplx"}
     
     def __init__(
         self,
@@ -131,7 +134,7 @@ class VocabularyGenerator:
             model_path: Path to wSignGen model weights
             use_placeholder: If True, use placeholder motions
         """
-        self.model_path = model_path
+        self.model_path = Path(model_path) if model_path is not None else None
         self.use_placeholder = use_placeholder
         self._model = None
     
@@ -194,24 +197,254 @@ class VocabularyGenerator:
     
     def _generate_wsigngen(self, word: str, gloss: str) -> VocabularyMotion:
         """Generate motion using wSignGen model.
-        
-        TODO: Implement actual wSignGen inference.
         """
         if self._model is None:
             self._load_model()
-        
-        # TODO: Actual inference
-        return self._generate_placeholder(word, gloss)
-    
+
+        if isinstance(self._model, dict) and self._model.get("model_type") == "wsigngen-lite":
+            return self._infer_from_lite_checkpoint(word, gloss, self._model)
+
+        result = self._run_external_model(word, gloss)
+        if isinstance(result, VocabularyMotion):
+            return result
+        if not isinstance(result, dict):
+            raise TypeError("wSignGen model output must be VocabularyMotion or dict")
+        return self._motion_from_output_dict(word, gloss, result)
+
     def _load_model(self) -> None:
         """Load wSignGen model weights."""
         if self.model_path is None:
-            print("Warning: No model path provided, using placeholder mode")
-            self.use_placeholder = True
+            raise ValueError("model_path is required when use_placeholder=False")
+
+        if not self.model_path.exists():
+            raise FileNotFoundError(f"wSignGen model not found: {self.model_path}")
+
+        if self.model_path.suffix.lower() == ".json":
+            model_data = json.loads(self.model_path.read_text())
+            model_type = model_data.get("model_type", "wsigngen-lite")
+            if model_type != "wsigngen-lite":
+                raise ValueError(f"Unsupported JSON model_type: {model_type}")
+            self._validate_lite_checkpoint(model_data)
+            self._model = model_data
             return
-        
-        # TODO: Load wSignGen model
-        print(f"TODO: Load wSignGen model from {self.model_path}")
+
+        try:
+            import torch
+        except ImportError as exc:
+            raise RuntimeError(
+                "Loading non-JSON wSignGen checkpoints requires torch to be installed"
+            ) from exc
+
+        self._model = torch.load(self.model_path, map_location="cpu")
+
+    def _validate_lite_checkpoint(self, checkpoint: dict[str, Any]) -> None:
+        """Validate required fields for lightweight checkpoint format."""
+        fps = int(checkpoint.get("fps", 30))
+        num_frames = int(checkpoint.get("num_frames", 45))
+        body_pose_dim = int(checkpoint.get("body_pose_dim", 72))
+        hand_pose_dim = int(checkpoint.get("hand_pose_dim", 45))
+        expression_dim = int(checkpoint.get("expression_dim", 10))
+        mesh_format = str(checkpoint.get("mesh_format", "smplh"))
+
+        if fps <= 0:
+            raise ValueError("Lite checkpoint field fps must be > 0")
+        if num_frames <= 0:
+            raise ValueError("Lite checkpoint field num_frames must be > 0")
+        if body_pose_dim <= 0:
+            raise ValueError("Lite checkpoint field body_pose_dim must be > 0")
+        if hand_pose_dim <= 0:
+            raise ValueError("Lite checkpoint field hand_pose_dim must be > 0")
+        if expression_dim < 0:
+            raise ValueError("Lite checkpoint field expression_dim must be >= 0")
+        if mesh_format not in self._MESH_FORMATS:
+            raise ValueError("Lite checkpoint field mesh_format must be one of smpl/smplh/smplx")
+
+    def _infer_from_lite_checkpoint(
+        self,
+        word: str,
+        gloss: str,
+        checkpoint: dict[str, Any],
+    ) -> VocabularyMotion:
+        """Run deterministic lightweight inference from JSON checkpoint parameters."""
+        fps = int(checkpoint.get("fps", 30))
+        num_frames = int(checkpoint.get("num_frames", 45))
+        body_pose_dim = int(checkpoint.get("body_pose_dim", 72))
+        hand_pose_dim = int(checkpoint.get("hand_pose_dim", 45))
+        expression_dim = int(checkpoint.get("expression_dim", 10))
+        mesh_format = self._normalize_mesh_format(str(checkpoint.get("mesh_format", "smplh")))
+        amplitude = float(checkpoint.get("amplitude", 0.3))
+        translation_scale = float(checkpoint.get("translation_scale", 0.02))
+        base_seed = int(checkpoint.get("seed", 0))
+
+        token = f"{word}|{gloss}".encode()
+        digest = hashlib.sha256(token).digest()
+        token_seed = int.from_bytes(digest[:4], byteorder="little")
+        rng = np.random.default_rng(base_seed + token_seed)
+
+        body_phase = rng.uniform(0.0, 2.0 * np.pi, size=body_pose_dim)
+        left_phase = rng.uniform(0.0, 2.0 * np.pi, size=hand_pose_dim)
+        right_phase = rng.uniform(0.0, 2.0 * np.pi, size=hand_pose_dim)
+        expression_phase = rng.uniform(0.0, 2.0 * np.pi, size=expression_dim)
+
+        frame_duration_ms = 1000.0 / fps
+        frames: list[MeshFrame] = []
+        for i in range(num_frames):
+            t = i / num_frames
+            timestamp_ms = int(round(i * frame_duration_ms))
+
+            body_pose = (
+                amplitude * np.sin(2.0 * np.pi * t + body_phase)
+            ).astype(np.float64).tolist()
+            left_hand = (
+                amplitude * np.sin(3.0 * np.pi * t + left_phase)
+            ).astype(np.float64).tolist()
+            right_hand = (
+                amplitude * np.cos(3.0 * np.pi * t + right_phase)
+            ).astype(np.float64).tolist()
+
+            expression: list[float] | None = None
+            if expression_dim > 0:
+                expression = (
+                    0.5 * amplitude * np.sin(2.0 * np.pi * t + expression_phase)
+                ).astype(np.float64).tolist()
+
+            translation = (
+                float(translation_scale * np.sin(2.0 * np.pi * t)),
+                0.0,
+                float(translation_scale * np.cos(2.0 * np.pi * t)),
+            )
+
+            frames.append(
+                MeshFrame(
+                    timestamp_ms=timestamp_ms,
+                    body_pose=body_pose,
+                    left_hand_pose=left_hand,
+                    right_hand_pose=right_hand,
+                    translation=translation,
+                    expression=expression,
+                )
+            )
+
+        total_duration_ms = int(round(num_frames * frame_duration_ms))
+        return VocabularyMotion(
+            word=word,
+            asl_gloss=gloss,
+            frames=frames,
+            fps=fps,
+            total_duration_ms=total_duration_ms,
+            mesh_format=mesh_format,
+        )
+
+    def _run_external_model(self, word: str, gloss: str) -> Any:
+        """Execute model inference for non-lite checkpoints."""
+        model = self._model
+        if model is None:
+            raise RuntimeError("wSignGen model is not loaded")
+
+        generate_fn = getattr(model, "generate", None)
+        if generate_fn is None:
+            if not callable(model):
+                raise TypeError("Loaded wSignGen model is not callable and has no generate()")
+            generate_fn = model
+
+        for kwargs in (
+            {"word": word, "gloss": gloss},
+            {"gloss": gloss},
+            {"word": word},
+            {},
+        ):
+            try:
+                return generate_fn(**kwargs)
+            except TypeError:
+                continue
+
+        # Fallback positional calls.
+        try:
+            return generate_fn(word, gloss)
+        except TypeError:
+            return generate_fn(gloss)
+
+    def _motion_from_output_dict(
+        self,
+        word: str,
+        gloss: str,
+        output: dict[str, Any],
+    ) -> VocabularyMotion:
+        """Convert dictionary-based model output into VocabularyMotion."""
+        if "frames" not in output:
+            raise ValueError("Model output dict must contain a 'frames' list")
+
+        fps = int(output.get("fps", 30))
+        if fps <= 0:
+            raise ValueError("Model output fps must be > 0")
+
+        mesh_format = self._normalize_mesh_format(str(output.get("mesh_format", "smplh")))
+
+        frames_data = output["frames"]
+        if not isinstance(frames_data, list):
+            raise ValueError("Model output 'frames' must be a list")
+
+        parsed_frames: list[MeshFrame] = []
+        for index, frame in enumerate(frames_data):
+            if not isinstance(frame, dict):
+                raise ValueError("Each model output frame must be a dict")
+
+            timestamp_ms = int(frame.get("timestamp_ms", round(index * (1000.0 / fps))))
+            body_pose = [float(v) for v in frame["body_pose"]]
+            left_hand_pose = [float(v) for v in frame["left_hand_pose"]]
+            right_hand_pose = [float(v) for v in frame["right_hand_pose"]]
+            translation_data = frame.get("translation", (0.0, 0.0, 0.0))
+            if not isinstance(translation_data, (list, tuple)) or len(translation_data) != 3:
+                raise ValueError("Frame translation must be a 3-value tuple/list")
+            translation = (
+                float(translation_data[0]),
+                float(translation_data[1]),
+                float(translation_data[2]),
+            )
+            expression_raw = frame.get("expression")
+            expression = (
+                [float(v) for v in expression_raw]
+                if isinstance(expression_raw, list)
+                else None
+            )
+
+            parsed_frames.append(
+                MeshFrame(
+                    timestamp_ms=timestamp_ms,
+                    body_pose=body_pose,
+                    left_hand_pose=left_hand_pose,
+                    right_hand_pose=right_hand_pose,
+                    translation=translation,
+                    expression=expression,
+                )
+            )
+
+        if not parsed_frames:
+            raise ValueError("Model output 'frames' must not be empty")
+
+        total_duration_ms = int(
+            output.get("total_duration_ms", round(len(parsed_frames) * (1000.0 / fps)))
+        )
+        return VocabularyMotion(
+            word=word,
+            asl_gloss=gloss,
+            frames=parsed_frames,
+            fps=fps,
+            total_duration_ms=total_duration_ms,
+            mesh_format=mesh_format,
+        )
+
+    def _normalize_mesh_format(
+        self, mesh_format: str
+    ) -> Literal["smpl", "smplh", "smplx"]:
+        """Validate and narrow mesh format literal type."""
+        if mesh_format not in self._MESH_FORMATS:
+            raise ValueError("mesh_format must be one of smpl/smplh/smplx")
+        if mesh_format == "smpl":
+            return "smpl"
+        if mesh_format == "smplh":
+            return "smplh"
+        return "smplx"
 
 
 def generate_vocabulary_batch(
