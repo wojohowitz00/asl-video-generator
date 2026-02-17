@@ -52,6 +52,8 @@ class AvatarRenderer:
     def __init__(self, config: RenderConfig | None = None):
         """Initialize renderer with config."""
         self.config = config or RenderConfig()
+        self._pyrender_available: bool | None = None
+        self._pyrender_fallback_warned = False
     
     def render_poses(
         self,
@@ -247,9 +249,38 @@ class AvatarRenderer:
         backend = self.config.mesh_backend
         if backend == "stylized":
             return self._build_mesh_image_stylized(frame, frame_index, total_frames)
-        if backend in {"software_3d", "pyrender"}:
+        if backend == "pyrender":
+            if self._is_pyrender_available():
+                return self._build_mesh_image_pyrender(frame, frame_index, total_frames)
+            if not self._pyrender_fallback_warned:
+                print("pyrender backend unavailable; falling back to software_3d mesh renderer.")
+                self._pyrender_fallback_warned = True
+            return self._build_mesh_image_software_3d(frame, frame_index, total_frames)
+        if backend == "software_3d":
             return self._build_mesh_image_software_3d(frame, frame_index, total_frames)
         return self._build_mesh_image_stylized(frame, frame_index, total_frames)
+
+    def _is_pyrender_available(self) -> bool:
+        """Check if optional pyrender dependencies are available."""
+        if self._pyrender_available is not None:
+            return self._pyrender_available
+        try:
+            import pyrender  # noqa: F401
+            import trimesh  # noqa: F401
+        except Exception:
+            self._pyrender_available = False
+            return False
+        self._pyrender_available = True
+        return True
+
+    def _build_mesh_image_pyrender(
+        self, frame: dict[str, Any], frame_index: int, total_frames: int
+    ) -> "PILImage":
+        """Render mesh frame via pyrender path.
+
+        Currently uses software_3d rendering as deterministic fallback implementation.
+        """
+        return self._build_mesh_image_software_3d(frame, frame_index, total_frames)
 
     def _build_mesh_image_stylized(
         self, frame: dict[str, Any], frame_index: int, total_frames: int

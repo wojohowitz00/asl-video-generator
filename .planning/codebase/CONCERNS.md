@@ -1,11 +1,12 @@
 # Codebase Concerns
 
-Analysis Date: 2026-02-17 (updated after t9r completion)
+Analysis Date: 2026-02-17 (updated after q7m completion)
 
 ## Critical Functional Gaps
 
 - Software 3D mesh backend and artifact-level fidelity regression tests are now in place.
-- Optional `pyrender` backend path remains dependency-sensitive and should stay guarded by fallback behavior tests.
+- Optional `pyrender` backend path now has explicit routing + tested fallback behavior.
+- Native high-fidelity pyrender rendering implementation is still not enabled (current pyrender path delegates to deterministic software fallback).
 
 ## Reliability Gaps
 

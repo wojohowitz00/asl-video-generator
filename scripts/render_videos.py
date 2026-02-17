@@ -63,7 +63,10 @@ def create_parser() -> argparse.ArgumentParser:
         "--mesh-backend",
         choices=["stylized", "software_3d", "pyrender"],
         default="software_3d",
-        help="Mesh renderer backend (default: software_3d)",
+        help=(
+            "Mesh renderer backend (default: software_3d). "
+            "If pyrender dependencies are unavailable, falls back to software_3d."
+        ),
     )
     parser.add_argument(
         "--camera-azimuth",

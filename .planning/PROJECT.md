@@ -22,13 +22,14 @@ Provide a reproducible path from text input to ASL-compatible video assets that 
 - v0.2 milestone backlog (`asl-video-generator-cxv`) is complete and closed.
 - v0.3 milestone backlog (`asl-video-generator-v5u`) is complete and closed.
 - v0.4 typing tranche (`asl-video-generator-t9r`) is complete and closed.
+- v0.5 pyrender hardening tranche (`asl-video-generator-q7m`) is complete and closed.
 - CI workflow now runs pytest + repo-wide Ruff (`src/scripts/tests`) + full mypy scope for `src/asl_video_generator`.
 - Beads is configured for stable direct SQLite usage in this environment (`.beads/config.yaml`).
 
 ## Next Milestone Goals
 
-- Decide whether to integrate optional high-fidelity external mesh backend (`pyrender` path) in production.
-- Define next feature backlog after v0.3 completion.
+- Evaluate full native `pyrender` rendering implementation vs. current deterministic fallback path.
+- Define next feature backlog for model/render quality improvements after v0.5 hardening.
 
 ## Requirements
 
@@ -53,11 +54,12 @@ See `.planning/REQUIREMENTS.md`.
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Track work in Beads | Persistent, dependency-aware backlog | In use (`asl-video-generator-v5u`, `asl-video-generator-t9r`) |
+| Track work in Beads | Persistent, dependency-aware backlog | In use (`asl-video-generator-v5u`, `asl-video-generator-t9r`, `asl-video-generator-q7m`) |
 | Use GSD `.planning` docs | Make phase status explicit and resumable | Initialized |
 | Complete v0.2 before widening scope | Keep momentum and de-risk integration first | Completed (Phases 3/4) |
 | Plan v0.3 around fidelity + quality debt | Highest remaining product and engineering leverage | Completed (Phases 5/6) |
 | Run v0.4 typing hardening tranche | Enable broader type-safety gate with low risk behavior change | Completed (`t9r.1`-`t9r.4`) |
+| Run v0.5 pyrender hardening tranche | Stabilize optional backend behavior and avoid runtime surprises | Completed (`q7m.1`-`q7m.3`) |
 
 ---
 *Last updated: 2026-02-17*

@@ -36,6 +36,12 @@
 - [x] **TYPE-01**: Clear mypy errors across full `src/asl_video_generator` module scope.
 - [x] **TYPE-02**: Expand CI mypy gate to run against full package module tree.
 
+## v0.5 Optional Backend Hardening (Completed)
+
+- [x] **PRY-01**: Route `mesh_backend=pyrender` explicitly and detect optional dependency availability.
+- [x] **PRY-02**: Fall back deterministically to `software_3d` when pyrender dependencies are unavailable.
+- [x] **PRY-03**: Add regression tests and operator docs for pyrender fallback behavior.
+
 ## Out of Scope (Current Milestone)
 
 - Re-architecting the entire pipeline into new infrastructure.
@@ -59,3 +65,6 @@
 | OPS-01 | Phase 6 | asl-video-generator-v5u.6 |
 | TYPE-01 | Phase 7 | asl-video-generator-t9r.1, asl-video-generator-t9r.2, asl-video-generator-t9r.3 |
 | TYPE-02 | Phase 7 | asl-video-generator-t9r.4 |
+| PRY-01 | Phase 8 | asl-video-generator-q7m.1 |
+| PRY-02 | Phase 8 | asl-video-generator-q7m.1 |
+| PRY-03 | Phase 8 | asl-video-generator-q7m.2, asl-video-generator-q7m.3 |

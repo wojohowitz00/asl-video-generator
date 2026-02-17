@@ -6,6 +6,7 @@
 - ✅ **v0.2 Production Mesh Pipeline** — implementation and validation complete (2026-02-17)
 - ✅ **v0.3 Rendering Fidelity + Code Health** — complete (2026-02-17)
 - ✅ **v0.4 Typing Hardening Tranche** — complete (2026-02-17)
+- ✅ **v0.5 Optional Pyrender Backend Hardening** — complete (2026-02-17)
 
 ## Phases
 
@@ -16,6 +17,7 @@
 - [x] **Phase 5: Rendering Fidelity Upgrade** - true 3D mesh rasterization + fidelity controls
 - [x] **Phase 6: Repository Health Hardening** - lint/type debt reduction + tracking stability
 - [x] **Phase 7: Typing Hardening Tranche** - full-source mypy cleanup + CI type gate expansion
+- [x] **Phase 8: Optional Backend Hardening** - pyrender routing/fallback robustness + docs
 
 ## Phase Details
 
@@ -90,6 +92,20 @@ Plans / linked Beads issues:
 - [x] `asl-video-generator-t9r.3` - Fix mypy typing debt in diffusion_renderer + pose_generator
 - [x] `asl-video-generator-t9r.4` - Expand CI mypy gate to include newly clean modules
 
+### Phase 8: Optional Backend Hardening
+**Goal**: Make optional pyrender backend behavior explicit, tested, and operator-friendly.
+**Depends on**: Phase 5 complete
+**Requirements**: PRY-01, PRY-02, PRY-03
+**Success Criteria**:
+1. `mesh_backend=pyrender` has explicit runtime routing path.
+2. Missing pyrender dependencies trigger deterministic software fallback.
+3. Tests and docs cover expected fallback behavior.
+
+Plans / linked Beads issues:
+- [x] `asl-video-generator-q7m.1` - Implement explicit pyrender backend routing and graceful fallback
+- [x] `asl-video-generator-q7m.2` - Add regression tests for pyrender fallback and routing behavior
+- [x] `asl-video-generator-q7m.3` - Document pyrender backend expectations in README/CLI help
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -101,3 +117,4 @@ Plans / linked Beads issues:
 | 5. Rendering Fidelity Upgrade | 3/3 | Complete | 2026-02-17 |
 | 6. Repository Health Hardening | 3/3 | Complete | 2026-02-17 |
 | 7. Typing Hardening Tranche | 4/4 | Complete | 2026-02-17 |
+| 8. Optional Backend Hardening | 3/3 | Complete | 2026-02-17 |
