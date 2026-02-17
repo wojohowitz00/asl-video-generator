@@ -5,11 +5,21 @@ learning app can consume. To keep the generator repo self-contained, the
 default curriculum file lives under ``assets/lessons`` in this repo.
 """
 
-import re
 import os
+import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
+from typing import Literal, TypedDict
+
+
+class LessonSentencePayload(TypedDict):
+    """Serialized lesson sentence payload."""
+
+    id: str
+    text: str
+    scenario: str
+    subsection: str
+    difficulty: str
 
 
 @dataclass
@@ -138,21 +148,24 @@ class LessonParser:
         else:
             return "advanced"
     
-    def to_json(self) -> list[dict]:
+    def to_json(self) -> list[LessonSentencePayload]:
         """Parse and convert to JSON-serializable format."""
         scenarios = self.parse()
-        result = []
+        result: list[LessonSentencePayload] = []
         
         for scenario in scenarios:
+            scenario_slug = scenario.name.lower().replace(" ", "_")
             for subsection, sentences in scenario.subsections.items():
                 for sentence in sentences:
-                    result.append({
-                        "id": f"{scenario.name.lower().replace(' ', '_')}_{sentence.sentence_number:03d}",
-                        "text": sentence.text,
-                        "scenario": scenario.name,
-                        "subsection": subsection,
-                        "difficulty": sentence.difficulty,
-                    })
+                    result.append(
+                        {
+                            "id": f"{scenario_slug}_{sentence.sentence_number:03d}",
+                            "text": sentence.text,
+                            "scenario": scenario.name,
+                            "subsection": subsection,
+                            "difficulty": sentence.difficulty,
+                        }
+                    )
         
         return result
     
@@ -161,7 +174,7 @@ class LessonParser:
     ) -> list[Sentence]:
         """Get all sentences of a specific difficulty level."""
         scenarios = self.parse()
-        result = []
+        result: list[Sentence] = []
         
         for scenario in scenarios:
             for sentences in scenario.subsections.values():
@@ -170,7 +183,7 @@ class LessonParser:
         return result
 
 
-def parse_lessons(file_path: str | None = None) -> list[dict]:
+def parse_lessons(file_path: str | None = None) -> list[LessonSentencePayload]:
     """Convenience function to parse lessons into JSON format."""
     parser = LessonParser(file_path)
     return parser.to_json()

@@ -54,6 +54,7 @@ def sample_pose_sequence():
 def temp_pose_dictionary(tmp_path):
     """Create a temporary pose dictionary with sample data."""
     import numpy as np
+
     from asl_video_generator.pose_dictionary import (
         PoseDictionary,
         PoseKeypoints,

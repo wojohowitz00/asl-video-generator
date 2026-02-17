@@ -5,11 +5,12 @@ tailored for Apple Silicon with unified memory architecture.
 """
 
 import os
+import sys
 from dataclasses import dataclass, field
 from enum import Enum
 from functools import lru_cache
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal, cast
 
 
 class DeviceType(Enum):
@@ -75,7 +76,7 @@ class PipelineConfig:
     """Configuration for the ASL video generation pipeline."""
 
     # Device settings
-    device: DeviceType = field(default_factory=lambda: detect_device())
+    device: DeviceType = field(default_factory=lambda: detect_device())  # type: ignore[has-type]
     use_fp16: bool = True  # Half precision for memory efficiency
 
     # Quality preset
@@ -90,7 +91,9 @@ class PipelineConfig:
     # Paths
     cache_dir: Path = field(default_factory=lambda: Path.home() / ".cache" / "asl-video")
     pose_dictionary_path: Path | None = None
-    models_dir: Path = field(default_factory=lambda: Path.home() / ".cache" / "asl-video" / "models")
+    models_dir: Path = field(
+        default_factory=lambda: Path.home() / ".cache" / "asl-video" / "models"
+    )
 
     # Translation settings
     llm_provider: Literal["openai", "gemini", "ollama"] = "openai"
@@ -107,7 +110,7 @@ class PipelineConfig:
     custom_fps: int | None = None
 
     @property
-    def torch_dtype(self):
+    def torch_dtype(self) -> Any:
         """Get appropriate torch dtype based on settings."""
         import torch
         return torch.float16 if self.use_fp16 else torch.float32
@@ -162,13 +165,13 @@ def detect_device() -> DeviceType:
     return DeviceType.CPU
 
 
-def validate_mps_availability() -> dict:
+def validate_mps_availability() -> dict[str, Any]:
     """Validate MPS availability and return diagnostic info.
 
     Returns:
         Dict with device info and any warnings.
     """
-    result = {
+    result: dict[str, Any] = {
         "device": "unknown",
         "available": False,
         "warnings": [],
@@ -179,7 +182,9 @@ def validate_mps_availability() -> dict:
         import torch
 
         result["info"]["torch_version"] = torch.__version__
-        result["info"]["python_version"] = f"{__import__('sys').version_info.major}.{__import__('sys').version_info.minor}"
+        result["info"]["python_version"] = (
+            f"{sys.version_info.major}.{sys.version_info.minor}"
+        )
 
         # Check MPS
         if hasattr(torch.backends, "mps"):
@@ -220,7 +225,7 @@ def validate_mps_availability() -> dict:
     return result
 
 
-def get_memory_info() -> dict:
+def get_memory_info() -> dict[str, Any]:
     """Get system memory information.
 
     Returns:
@@ -228,7 +233,7 @@ def get_memory_info() -> dict:
     """
     import platform
 
-    info = {
+    info: dict[str, Any] = {
         "platform": platform.system(),
         "machine": platform.machine(),
     }
@@ -308,8 +313,9 @@ def load_config_from_env() -> PipelineConfig:
 
     # LLM provider override
     if llm_env := os.getenv("ASL_LLM_PROVIDER"):
-        if llm_env.lower() in ("openai", "gemini", "ollama"):
-            config.llm_provider = llm_env.lower()
+        provider = llm_env.lower()
+        if provider in ("openai", "gemini", "ollama"):
+            config.llm_provider = cast(Literal["openai", "gemini", "ollama"], provider)
 
     # Cache dir override
     if cache_env := os.getenv("ASL_CACHE_DIR"):

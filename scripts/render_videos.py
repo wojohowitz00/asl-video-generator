@@ -7,16 +7,15 @@ Usage:
 
 import argparse
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from asl_video_generator.avatar_renderer import AvatarRenderer, RenderConfig
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Render ASL pose sequences to video"
-    )
+def create_parser() -> argparse.ArgumentParser:
+    """Create CLI parser for batch rendering."""
+    parser = argparse.ArgumentParser(description="Render ASL pose sequences to video")
     parser.add_argument(
         "--input", "-i",
         type=Path,
@@ -54,19 +53,55 @@ def main() -> None:
         default=512,
         help="Video height"
     )
+    parser.add_argument(
+        "--avatar-style",
+        choices=["skeleton", "mesh", "stylized"],
+        default="skeleton",
+        help="Avatar rendering style (default: skeleton)",
+    )
+    parser.add_argument(
+        "--mesh-backend",
+        choices=["stylized", "software_3d", "pyrender"],
+        default="software_3d",
+        help="Mesh renderer backend (default: software_3d)",
+    )
+    parser.add_argument(
+        "--camera-azimuth",
+        type=float,
+        default=0.0,
+        help="Camera azimuth angle in degrees for mesh rendering",
+    )
+    parser.add_argument(
+        "--camera-elevation",
+        type=float,
+        default=0.0,
+        help="Camera elevation angle in degrees for mesh rendering",
+    )
 
-    args = parser.parse_args()
+    return parser
 
-    print(f"Rendering videos from {args.input} to {args.output}...")
-    
-    config = RenderConfig(
+
+def build_render_config(args: argparse.Namespace) -> RenderConfig:
+    """Convert parsed args into renderer configuration."""
+    return RenderConfig(
         width=args.width,
         height=args.height,
         fps=args.fps,
         output_format=args.format,
-        avatar_style="skeleton",  # Default to skeleton for now
-        background_color=(255, 255, 255)
+        avatar_style=args.avatar_style,
+        mesh_backend=args.mesh_backend,
+        camera_angle=(args.camera_azimuth, args.camera_elevation),
+        background_color=(255, 255, 255),
     )
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = create_parser()
+    args = parser.parse_args(argv)
+
+    print(f"Rendering videos from {args.input} to {args.output}...")
+
+    config = build_render_config(args)
     
     # Pose manifest contains curriculum metadata (scenario/difficulty/text) and
     # optionally gloss tokens. We'll merge it into a video manifest that matches
@@ -158,12 +193,15 @@ def main() -> None:
 
     # Save updated manifest to video output dir
     video_manifest_path = args.output / "manifest.json"
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(UTC).isoformat()
+    scenarios = sorted(
+        {item.get("scenario") for item in updated_items if item.get("scenario")}
+    )
     video_manifest_content = {
         "version": "1.0.0",
         "updatedAt": now,
         "totalItems": len(updated_items),
-        "scenarios": sorted({item.get("scenario") for item in updated_items if item.get("scenario")}),
+        "scenarios": scenarios,
         "items": updated_items,
     }
     video_manifest_path.write_text(json.dumps(video_manifest_content, indent=2))

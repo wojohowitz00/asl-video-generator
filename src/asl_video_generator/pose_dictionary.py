@@ -7,9 +7,10 @@ from datasets like WLASL and How2Sign.
 
 import json
 import sqlite3
+from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterator
+from typing import Any
 
 import numpy as np
 
@@ -29,7 +30,7 @@ class PoseKeypoints:
     # Face mesh (468 MediaPipe or 70 OpenPose) - optional
     face: np.ndarray | None = None  # Shape: (N, 3)
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to JSON-serializable dictionary."""
         return {
             "body": self.body.tolist(),
@@ -39,7 +40,7 @@ class PoseKeypoints:
         }
 
     @classmethod
-    def from_dict(cls, data: dict) -> "PoseKeypoints":
+    def from_dict(cls, data: dict[str, Any]) -> "PoseKeypoints":
         """Create from dictionary."""
         return cls(
             body=np.array(data["body"]),
@@ -61,7 +62,7 @@ class PoseKeypoints:
         body_dist = np.linalg.norm(self.body[:, :2] - other.body[:, :2])
 
         # Weight hands more heavily
-        return 0.4 * left_dist + 0.4 * right_dist + 0.2 * body_dist
+        return float(0.4 * left_dist + 0.4 * right_dist + 0.2 * body_dist)
 
 
 @dataclass
@@ -76,11 +77,11 @@ class SignPoseSequence:
     source: str = "unknown"  # Dataset source (wlasl, how2sign, etc.)
     signer_id: str | None = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.duration_ms == 0 and self.frames:
             self.duration_ms = int(len(self.frames) / self.fps * 1000)
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to JSON-serializable dictionary."""
         return {
             "gloss": self.gloss,
@@ -93,7 +94,7 @@ class SignPoseSequence:
         }
 
     @classmethod
-    def from_dict(cls, data: dict) -> "SignPoseSequence":
+    def from_dict(cls, data: dict[str, Any]) -> "SignPoseSequence":
         """Create from dictionary."""
         return cls(
             gloss=data["gloss"],
@@ -340,12 +341,16 @@ class PoseDictionary:
         """
         with sqlite3.connect(self.db_path) as conn:
             if source:
-                query = """SELECT gloss, variant_id, fps, duration_ms, source, signer_id, frames_json
-                           FROM signs WHERE source = ?"""
+                query = (
+                    "SELECT gloss, variant_id, fps, duration_ms, source, signer_id, "
+                    "frames_json FROM signs WHERE source = ?"
+                )
                 rows = conn.execute(query, (source,))
             else:
-                query = """SELECT gloss, variant_id, fps, duration_ms, source, signer_id, frames_json
-                           FROM signs"""
+                query = (
+                    "SELECT gloss, variant_id, fps, duration_ms, source, signer_id, "
+                    "frames_json FROM signs"
+                )
                 rows = conn.execute(query)
 
             for row in rows:

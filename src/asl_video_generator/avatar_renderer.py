@@ -13,7 +13,7 @@ Supports multiple rendering backends:
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 import numpy as np
 
@@ -28,6 +28,11 @@ class RenderConfig:
     background_color: tuple[int, int, int] = (255, 255, 255)
     avatar_style: Literal["skeleton", "mesh", "stylized"] = "skeleton"
     output_format: Literal["mp4", "webm", "gif", "frames"] = "mp4"
+    # Mesh renderer backend:
+    # - stylized: existing coefficient-driven 2D proxy rendering
+    # - software_3d: triangle rasterization from 3D vertices/faces
+    # - pyrender: reserved for future external renderer integration (falls back to software_3d)
+    mesh_backend: Literal["stylized", "software_3d", "pyrender"] = "software_3d"
     # For 3D mesh rendering
     camera_distance: float = 2.5
     camera_angle: tuple[float, float] = (0.0, 0.0)  # (azimuth, elevation)
@@ -226,9 +231,20 @@ class AvatarRenderer:
 
         source_index = np.arange(array.size, dtype=np.float64)
         target_index = np.linspace(0.0, float(array.size - 1), num=count)
-        return np.interp(target_index, source_index, array)
+        return np.asarray(np.interp(target_index, source_index, array), dtype=np.float64)
 
-    def _build_mesh_image(self, frame: dict, frame_index: int, total_frames: int):
+    def _build_mesh_image(self, frame: dict[str, Any], frame_index: int, total_frames: int):
+        """Dispatch mesh frame rendering to configured backend."""
+        backend = self.config.mesh_backend
+        if backend == "stylized":
+            return self._build_mesh_image_stylized(frame, frame_index, total_frames)
+        if backend in {"software_3d", "pyrender"}:
+            return self._build_mesh_image_software_3d(frame, frame_index, total_frames)
+        return self._build_mesh_image_stylized(frame, frame_index, total_frames)
+
+    def _build_mesh_image_stylized(
+        self, frame: dict[str, Any], frame_index: int, total_frames: int
+    ):
         """Create a stylized mesh visualization frame as a PIL image."""
         from PIL import Image, ImageDraw
 
@@ -295,8 +311,155 @@ class AvatarRenderer:
 
         draw.text((8, 8), f"Mesh frame {frame_index + 1}/{max(total_frames, 1)}", fill=(0, 0, 0))
         return img
+
+    def _build_mesh_image_software_3d(
+        self, frame: dict[str, Any], frame_index: int, total_frames: int
+    ):
+        """Render mesh frame using software 3D triangle rasterization."""
+        from PIL import Image, ImageDraw
+
+        vertices, faces = self._extract_or_synthesize_mesh(frame)
+        projected, depths, transformed = self._project_mesh(vertices, frame)
+
+        face_vertices = transformed[faces]
+        face_normals = np.cross(
+            face_vertices[:, 1] - face_vertices[:, 0],
+            face_vertices[:, 2] - face_vertices[:, 0],
+        )
+        normal_norm = np.linalg.norm(face_normals, axis=1, keepdims=True)
+        face_normals = face_normals / np.clip(normal_norm, 1e-6, None)
+        light_dir = np.array([0.35, 0.4, 1.0], dtype=np.float64)
+        light_dir = light_dir / np.linalg.norm(light_dir)
+        face_intensity = np.clip(face_normals @ light_dir, 0.15, 1.0)
+
+        img = Image.new(
+            "RGB",
+            (self.config.width, self.config.height),
+            self.config.background_color,
+        )
+        draw = ImageDraw.Draw(img)
+
+        # Painter's algorithm: draw far faces first.
+        face_depths = depths[faces].mean(axis=1)
+        face_order = np.argsort(face_depths)[::-1]
+
+        for face_idx in face_order:
+            face = faces[face_idx]
+            pts = projected[face]
+            shade = int(max(30.0, min(235.0, 45.0 + 170.0 * float(face_intensity[face_idx]))))
+            color = (shade, int(0.95 * shade), int(0.9 * shade))
+            polygon = [(int(p[0]), int(p[1])) for p in pts]
+            draw.polygon(polygon, fill=color, outline=(35, 35, 35))
+
+        draw.text(
+            (8, 8),
+            f"Mesh3D {frame_index + 1}/{max(total_frames, 1)}",
+            fill=(0, 0, 0),
+        )
+        return img
+
+    def _extract_or_synthesize_mesh(self, frame: dict[str, Any]) -> tuple[np.ndarray, np.ndarray]:
+        """Extract vertices/faces from frame or synthesize a low-poly proxy mesh."""
+        vertices_raw = frame.get("vertices")
+        faces_raw = frame.get("faces")
+
+        if isinstance(vertices_raw, list) and isinstance(faces_raw, list):
+            vertices = np.asarray(vertices_raw, dtype=np.float64)
+            faces = np.asarray(faces_raw, dtype=np.int64)
+            valid_vertices = vertices.ndim == 2 and vertices.shape[1] == 3
+            valid_faces = faces.ndim == 2 and faces.shape[1] == 3
+            if valid_vertices and valid_faces:
+                return vertices, faces
+
+        body = self._sample_pose_values(frame.get("body_pose", []), 12)
+        left = self._sample_pose_values(frame.get("left_hand_pose", []), 6)
+        right = self._sample_pose_values(frame.get("right_hand_pose", []), 6)
+
+        # Build a lat-long sphere-like mesh and deform it by pose coefficients.
+        lat_count = 8
+        lon_count = 12
+        verts: list[list[float]] = []
+        for i in range(lat_count):
+            v = i / (lat_count - 1)
+            phi = np.pi * (v - 0.5)
+            for j in range(lon_count):
+                u = j / lon_count
+                theta = 2.0 * np.pi * u
+                radius = 0.45 + 0.06 * np.sin(theta * 2.0 + body[i % max(body.size, 1)] * 2.0)
+                x = radius * np.cos(phi) * np.cos(theta)
+                y = radius * np.sin(phi) * 1.2
+                z = radius * np.cos(phi) * np.sin(theta)
+                verts.append([float(x), float(y), float(z)])
+
+        if left.size:
+            for idx in range(min(left.size, lon_count)):
+                verts[idx][0] -= 0.04 * float(left[idx])
+                verts[idx][2] += 0.03 * float(left[idx])
+        if right.size:
+            offset = lon_count
+            for idx in range(min(right.size, lon_count)):
+                v_idx = offset + idx
+                verts[v_idx][0] += 0.04 * float(right[idx])
+                verts[v_idx][2] -= 0.03 * float(right[idx])
+
+        faces: list[list[int]] = []
+        for i in range(lat_count - 1):
+            for j in range(lon_count):
+                nj = (j + 1) % lon_count
+                a = i * lon_count + j
+                b = i * lon_count + nj
+                c = (i + 1) * lon_count + j
+                d = (i + 1) * lon_count + nj
+                faces.append([a, c, b])
+                faces.append([b, c, d])
+
+        return np.asarray(verts, dtype=np.float64), np.asarray(faces, dtype=np.int64)
+
+    def _project_mesh(
+        self, vertices: np.ndarray, frame: dict[str, Any]
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Project 3D vertices into 2D screen coordinates."""
+        azimuth_deg, elevation_deg = self.config.camera_angle
+        azimuth = np.deg2rad(azimuth_deg)
+        elevation = np.deg2rad(elevation_deg)
+
+        rot_y = np.array(
+            [
+                [np.cos(azimuth), 0.0, np.sin(azimuth)],
+                [0.0, 1.0, 0.0],
+                [-np.sin(azimuth), 0.0, np.cos(azimuth)],
+            ],
+            dtype=np.float64,
+        )
+        rot_x = np.array(
+            [
+                [1.0, 0.0, 0.0],
+                [0.0, np.cos(elevation), -np.sin(elevation)],
+                [0.0, np.sin(elevation), np.cos(elevation)],
+            ],
+            dtype=np.float64,
+        )
+        rot = rot_x @ rot_y
+
+        transformed = vertices @ rot.T
+
+        translation = frame.get("translation", [0.0, 0.0, 0.0])
+        if isinstance(translation, (list, tuple)) and len(translation) == 3:
+            transformed[:, 0] += float(translation[0])
+            transformed[:, 1] += float(translation[1])
+            transformed[:, 2] += float(translation[2])
+
+        camera_z = transformed[:, 2] + max(self.config.camera_distance, 1.0)
+        camera_z = np.clip(camera_z, 0.25, None)
+
+        focal = min(self.config.width, self.config.height) * 0.9
+        x_screen = self.config.width * 0.5 + focal * (transformed[:, 0] / camera_z)
+        y_screen = self.config.height * 0.5 - focal * (transformed[:, 1] / camera_z)
+        projected = np.stack([x_screen, y_screen], axis=1)
+
+        return projected, camera_z, transformed
     
-    def _draw_skeleton_frame(self, frame: dict, output_path: Path) -> None:
+    def _draw_skeleton_frame(self, frame: dict[str, Any], output_path: Path) -> None:
         """Draw a single skeleton frame to image."""
         try:
             from PIL import Image, ImageDraw
@@ -324,7 +487,7 @@ class AvatarRenderer:
     
     def _draw_mesh_placeholder(
         self,
-        frame: dict,
+        frame: dict[str, Any],
         output_path: Path,
         frame_index: int = 0,
         total_frames: int = 1,
@@ -361,7 +524,7 @@ class AvatarRenderer:
         
         return output_path
     
-    def _convert_to_threejs_tracks(self, frames: list[dict]) -> list[dict]:
+    def _convert_to_threejs_tracks(self, frames: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """Convert frame data to Three.js animation tracks."""
         tracks = []
         

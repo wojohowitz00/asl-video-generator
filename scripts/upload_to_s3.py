@@ -13,11 +13,10 @@ Usage:
 
 import argparse
 import json
-import os
 import mimetypes
-from datetime import datetime, timezone
+import os
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Optional
 
 import boto3
 from botocore.exceptions import ClientError
@@ -27,7 +26,7 @@ def upload_file(
     s3_client, 
     file_path: Path, 
     bucket: str, 
-    object_name: Optional[str] = None
+    object_name: str | None = None
 ) -> bool:
     """Upload a file to an S3 bucket."""
     if object_name is None:
@@ -176,9 +175,12 @@ def main() -> None:
     # Update manifest content
     manifest_data["items"] = updated_items
     manifest_data["version"] = manifest_version
-    manifest_data["updatedAt"] = datetime.now(timezone.utc).isoformat()
+    manifest_data["updatedAt"] = datetime.now(UTC).isoformat()
     manifest_data["totalItems"] = len(updated_items)
-    manifest_data["scenarios"] = sorted({i.get("scenario") for i in updated_items if i.get("scenario")})
+    scenarios = sorted(
+        {item.get("scenario") for item in updated_items if item.get("scenario")}
+    )
+    manifest_data["scenarios"] = scenarios
     
     # Save updated manifest locally first
     updated_manifest_path = args.input / "manifest_public.json"
@@ -193,7 +195,7 @@ def main() -> None:
             manifest_url = f"https://{args.bucket}.s3.{args.region}.amazonaws.com/{manifest_key}"
             
         print(f"\nSuccess! Manifest uploaded to: {manifest_url}")
-        print(f"Set EXPO_PUBLIC_CONTENT_MANIFEST_URL to this URL in the learning app.")
+        print("Set EXPO_PUBLIC_CONTENT_MANIFEST_URL to this URL in the learning app.")
     else:
         print("Failed to upload manifest.")
 

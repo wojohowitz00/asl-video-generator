@@ -6,7 +6,6 @@ photorealistic signing videos from skeletal pose sequences.
 Optimized for Apple Silicon M4 with 24GB unified memory.
 """
 
-import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
@@ -18,7 +17,6 @@ from tqdm import tqdm
 from .config import (
     DeviceType,
     PipelineConfig,
-    QualityPreset,
     load_config_from_env,
 )
 from .pose_generator import PoseFrame, PoseSequence
@@ -110,7 +108,6 @@ class DiffusionRenderer:
             return False
 
         try:
-            import torch
             from diffusers import (
                 AnimateDiffPipeline,
                 ControlNetModel,
@@ -192,8 +189,6 @@ class DiffusionRenderer:
                 mode = "diffusion"
             else:
                 mode = "skeleton"
-
-        settings = self.config.settings
 
         if mode == "diffusion":
             return self._render_diffusion(
@@ -424,9 +419,6 @@ class DiffusionRenderer:
         # Light background
         img = Image.new("RGB", (width, height), (240, 240, 245))
         draw = ImageDraw.Draw(img)
-
-        # Draw a subtle gradient or person silhouette placeholder
-        center_x, center_y = width // 2, height // 2
 
         # Draw body skeleton with nicer colors
         body = frame.body_keypoints

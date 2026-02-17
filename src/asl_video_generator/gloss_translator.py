@@ -13,7 +13,7 @@ import hashlib
 import json
 import os
 import sqlite3
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
 
@@ -109,7 +109,7 @@ ASL_CORE_VOCABULARY = {
     "SISTER", "GRANDMOTHER", "GRANDFATHER", "AUNT", "UNCLE", "COUSIN", "FRIEND",
     "TEACHER", "STUDENT", "DOCTOR", "NURSE", "BOSS", "WORKER", "NAME",
     # Places
-    "HOME", "HOUSE", "SCHOOL", "WORK", "OFFICE", "STORE", "SHOP", "HOSPITAL",
+    "HOME", "HOUSE", "SCHOOL", "OFFICE", "STORE", "SHOP", "HOSPITAL",
     "CHURCH", "LIBRARY", "RESTAURANT", "BANK", "PARK", "CITY", "TOWN", "COUNTRY",
     "ROOM", "BATHROOM", "KITCHEN", "BEDROOM", "BUILDING", "STREET", "PLACE",
     # Numbers (fingerspelled or signed)
@@ -127,10 +127,10 @@ ASL_CORE_VOCABULARY = {
     "HAPPY", "SAD", "ANGRY", "SCARED", "TIRED", "SICK", "HEALTHY", "HUNGRY",
     "THIRSTY", "BUSY", "FREE", "READY", "SURE", "AFRAID", "EXCITED", "NERVOUS",
     # Negation and modifiers
-    "NOT", "NONE", "NOTHING", "NEVER", "NO-ONE", "NOBODY", "VERY", "REALLY",
+    "NOT", "NONE", "NOTHING", "NO-ONE", "NOBODY", "VERY", "REALLY",
     "ALMOST", "COMPLETELY", "ONLY", "JUST", "ALSO", "TOO", "ENOUGH", "MORE",
     "LESS", "MOST", "LEAST", "ALL", "EVERY", "EACH", "SOME", "ANY", "MANY",
-    "FEW", "MUCH", "LITTLE",
+    "FEW", "MUCH",
     # Things
     "THING", "FOOD", "WATER", "MONEY", "PHONE", "COMPUTER", "CAR", "BOOK",
     "PAPER", "PEN", "CHAIR", "TABLE", "DOOR", "WINDOW", "LIGHT", "KEY",
@@ -263,13 +263,19 @@ class GlossTranslator:
         {
             "english": "If it rains, I will stay home.",
             "gloss": ["RAIN", "IF", "I", "HOME", "STAY"],
-            "nmm": {"is_conditional": True, "eyebrow_position": "raised", "start_index": 0, "end_index": 2},
+            "nmm": {
+                "is_conditional": True,
+                "eyebrow_position": "raised",
+                "start_index": 0,
+                "end_index": 2,
+            },
             "note": "Conditional clause marked with raised eyebrows",
         },
     ]
 
     SYSTEM_PROMPT = """You are an expert ASL (American Sign Language) translator and linguist.
-Your task is to translate English text to ASL gloss notation with accurate Non-Manual Markers (NMMs).
+Your task is to translate English text to ASL gloss notation
+with accurate Non-Manual Markers (NMMs).
 
 ## ASL Gloss Rules:
 1. Use UPPERCASE for all signs
@@ -307,12 +313,17 @@ Your task is to translate English text to ASL gloss notation with accurate Non-M
 ## Output Format:
 Return JSON with these fields:
 - gloss: array of sign glosses in ASL order
-- nmm: object with facial_expression, head_movement, eyebrow_position, eye_gaze, mouth_morpheme, is_question, question_type, is_negation, is_conditional, is_topic
+- nmm: object with facial_expression, head_movement, eyebrow_position,
+  eye_gaze, mouth_morpheme, is_question, question_type, is_negation,
+  is_conditional, is_topic
 - estimated_duration_ms: estimated signing duration (typically 400-600ms per sign)
 - difficulty: "beginner", "intermediate", or "advanced"
 
 ## Example vocabulary reference (use these when possible):
-HELLO, HOW, YOU, I, ME, MY, NAME, WHAT, WHERE, WHEN, WHY, WHO, TIME, TODAY, YESTERDAY, TOMORROW, THANK-YOU, PLEASE, SORRY, YES, NO, GOOD, BAD, UNDERSTAND, KNOW, NOT, WANT, NEED, LIKE, GO, COME, HELP, LEARN, WORK, HOME, SCHOOL, BATHROOM, EAT, DRINK, SLEEP, HAPPY, SAD, TIRED"""
+HELLO, HOW, YOU, I, ME, MY, NAME, WHAT, WHERE, WHEN, WHY, WHO, TIME, TODAY,
+YESTERDAY, TOMORROW, THANK-YOU, PLEASE, SORRY, YES, NO, GOOD, BAD, UNDERSTAND,
+KNOW, NOT, WANT, NEED, LIKE, GO, COME, HELP, LEARN, WORK, HOME, SCHOOL,
+BATHROOM, EAT, DRINK, SLEEP, HAPPY, SAD, TIRED"""
 
     def __init__(
         self,
@@ -382,10 +393,16 @@ HELLO, HOW, YOU, I, ME, MY, NAME, WHAT, WHERE, WHEN, WHY, WHO, TIME, TODAY, YEST
 
     def _build_prompt(self, text: str) -> str:
         """Build the translation prompt with few-shot examples."""
-        examples_str = "\n\n".join([
-            f"English: {ex['english']}\nASL Gloss: {json.dumps({'gloss': ex['gloss'], 'nmm': ex.get('nmm', {})}, indent=2)}"
-            for ex in self.FEW_SHOT_EXAMPLES[:6]  # Use first 6 examples
-        ])
+        examples = []
+        for ex in self.FEW_SHOT_EXAMPLES[:6]:
+            example_payload = {"gloss": ex["gloss"], "nmm": ex.get("nmm", {})}
+            examples.append(
+                "English: "
+                f"{ex['english']}\n"
+                "ASL Gloss: "
+                f"{json.dumps(example_payload, indent=2)}"
+            )
+        examples_str = "\n\n".join(examples)
 
         return f"""Translate the following English text to ASL gloss with NMM annotations.
 
@@ -516,7 +533,7 @@ Return ONLY valid JSON (no markdown, no explanation)."""
                 difficulty=data.get("difficulty", "beginner"),
             )
 
-        except (json.JSONDecodeError, KeyError) as e:
+        except (json.JSONDecodeError, KeyError):
             # Fallback: simple word-by-word translation
             words = english.upper()
             for char in "?.,!;:\"'":

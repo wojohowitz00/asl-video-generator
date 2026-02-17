@@ -1,7 +1,6 @@
 """Tests for pose dictionary module."""
 
 import numpy as np
-import pytest
 
 
 def test_pose_keypoints_creation():

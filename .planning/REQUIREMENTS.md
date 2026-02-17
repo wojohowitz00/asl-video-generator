@@ -19,8 +19,17 @@
 ## Operational Quality
 
 - [x] **QUAL-01**: Local pytest suite passes in development environment.
-- [ ] **QUAL-02**: Automated CI validates every change.
-- [ ] **QUAL-03**: Critical pipeline paths have integration coverage.
+- [x] **QUAL-02**: Automated CI validates every change.
+- [x] **QUAL-03**: Critical pipeline paths have integration coverage.
+
+## v0.3 Rendering Fidelity + Code Health (Planned)
+
+- [x] **FID-01**: Upgrade mesh rendering from stylized 2D proxy to true 3D mesh rasterization.
+- [x] **FID-02**: Expose mesh rendering backend/style controls in CLI and batch scripts.
+- [x] **FID-03**: Add artifact-level regression tests for high-fidelity mesh rendering outputs.
+- [x] **ENG-01**: Reduce repository-wide Ruff violations and expand CI lint scope.
+- [x] **ENG-02**: Reduce core-module mypy debt and expand CI type-check scope.
+- [x] **OPS-01**: Stabilize Beads backend/daemon behavior for consistent local tracking commands.
 
 ## Out of Scope (Current Milestone)
 
@@ -37,3 +46,9 @@
 | PROD-03 | Phase 3 | asl-video-generator-cxv.3 |
 | PROD-04 | Phase 4 | asl-video-generator-cxv.5 |
 | PROD-05 | Phase 3 | asl-video-generator-cxv.4 |
+| FID-01 | Phase 5 | asl-video-generator-v5u.1 |
+| FID-02 | Phase 5 | asl-video-generator-v5u.2 |
+| FID-03 | Phase 5 | asl-video-generator-v5u.3 |
+| ENG-01 | Phase 6 | asl-video-generator-v5u.4 |
+| ENG-02 | Phase 6 | asl-video-generator-v5u.5 |
+| OPS-01 | Phase 6 | asl-video-generator-v5u.6 |

@@ -1,9 +1,6 @@
 """Tests for pose generator module."""
 
-import json
-from pathlib import Path
 
-import pytest
 
 
 def test_pose_frame_creation():

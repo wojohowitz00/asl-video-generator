@@ -18,16 +18,17 @@ Provide a reproducible path from text input to ASL-compatible video assets that 
 
 - Baseline pipeline implemented in Python package + CLI scripts.
 - Curriculum and content-manifest publishing workflow is present.
-- Unit/integration tests currently passing locally (`29 passed`).
-- Beads tracking initialized and backlog seeded for next milestone.
-- Significant mesh/model paths remain placeholder implementations.
+- Unit/integration tests currently passing locally (`40 passed`).
+- v0.2 milestone backlog (`asl-video-generator-cxv`) is complete and closed.
+- v0.3 milestone backlog (`asl-video-generator-v5u`) is complete and closed.
+- CI workflow now runs pytest + repo-wide Ruff (`src/scripts/tests`) + expanded mypy scope (4 core modules).
+- Beads is configured for stable direct SQLite usage in this environment (`.beads/config.yaml`).
 
 ## Next Milestone Goals
 
-- Replace placeholder mesh/model logic with production-ready implementations.
-- Add end-to-end coverage for vocabulary -> mesh -> video flow.
-- Add CI quality gates so regressions are caught automatically.
-- Align documentation with current CLI entry points.
+- Expand strict mypy coverage beyond the current four core modules.
+- Decide whether to integrate optional high-fidelity external mesh backend (`pyrender` path) in production.
+- Define next feature backlog after v0.3 completion.
 
 ## Requirements
 
@@ -39,7 +40,7 @@ See `.planning/REQUIREMENTS.md`.
 - CLI entry points in `pyproject.toml`: `asl-generate`, `asl-translate`, `asl-pose`, `asl-render`.
 - Core modules are under `src/asl_video_generator/`.
 - Content pipeline scripts are under `scripts/`.
-- Backlog tracked in Beads epic `asl-video-generator-cxv`.
+- Current Beads backlog is empty (all known work closed).
 
 ## Constraints
 
@@ -52,10 +53,10 @@ See `.planning/REQUIREMENTS.md`.
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Track work in Beads | Persistent, dependency-aware backlog | In use (`asl-video-generator-cxv`) |
+| Track work in Beads | Persistent, dependency-aware backlog | In use (`asl-video-generator-v5u`) |
 | Use GSD `.planning` docs | Make phase status explicit and resumable | Initialized |
-| Prioritize real mesh/model implementation next | Placeholder logic blocks production usefulness | Planned in Phase 3 |
-| Gate E2E tests behind feature completion | Prevent flaky or misleading coverage | Dependency-linked in Beads |
+| Complete v0.2 before widening scope | Keep momentum and de-risk integration first | Completed (Phases 3/4) |
+| Plan v0.3 around fidelity + quality debt | Highest remaining product and engineering leverage | Completed (Phases 5/6) |
 
 ---
 *Last updated: 2026-02-17*

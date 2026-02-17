@@ -27,6 +27,53 @@ def _sample_mesh_motion(num_frames: int = 6) -> dict:
     }
 
 
+def _sample_vertices_motion(num_frames: int = 6) -> dict:
+    base_vertices = [
+        (-0.45, -0.45, 0.0),
+        (0.45, -0.45, 0.0),
+        (0.0, 0.45, 0.0),
+        (0.0, -0.1, 0.55),
+    ]
+    faces = [
+        (0, 1, 2),
+        (0, 1, 3),
+        (1, 2, 3),
+        (2, 0, 3),
+    ]
+
+    frames = []
+    for i in range(num_frames):
+        phase = i / max(num_frames - 1, 1)
+        z_offset = 0.12 * phase
+        vertices = [[x, y, z + z_offset] for x, y, z in base_vertices]
+        frames.append(
+            {
+                "timestamp_ms": i * 40,
+                "vertices": vertices,
+                "faces": [list(face) for face in faces],
+                "translation": [0.0, 0.0, 0.0],
+            }
+        )
+
+    return {
+        "word": "hello",
+        "asl_gloss": "HELLO",
+        "fps": 24,
+        "total_duration_ms": num_frames * 40,
+        "mesh_format": "smplh",
+        "frames": frames,
+    }
+
+
+def test_render_config_accepts_3d_mesh_backend():
+    """RenderConfig should expose an explicit 3D mesh backend option."""
+    from asl_video_generator.avatar_renderer import RenderConfig
+
+    config = RenderConfig(avatar_style="mesh", output_format="gif", mesh_backend="software_3d")
+
+    assert config.mesh_backend == "software_3d"
+
+
 def test_render_mesh_creates_video_file(tmp_path):
     """render_mesh should write a video file, not only frame directory."""
     from asl_video_generator.avatar_renderer import AvatarRenderer, RenderConfig
@@ -45,6 +92,50 @@ def test_render_mesh_creates_video_file(tmp_path):
     assert result == output_path
     assert output_path.exists()
     assert output_path.stat().st_size > 0
+
+
+def test_render_mesh_3d_backend_responds_to_camera_angle(tmp_path):
+    """3D backend output should change when camera angle changes."""
+    from asl_video_generator.avatar_renderer import AvatarRenderer, RenderConfig
+
+    motion_data = _sample_vertices_motion(num_frames=6)
+    motion_path = tmp_path / "motion_vertices.json"
+    motion_path.write_text(json.dumps(motion_data))
+
+    out_a = tmp_path / "mesh_cam_a.gif"
+    out_b = tmp_path / "mesh_cam_b.gif"
+
+    renderer_a = AvatarRenderer(
+        RenderConfig(
+            width=128,
+            height=128,
+            fps=24,
+            output_format="gif",
+            avatar_style="mesh",
+            mesh_backend="software_3d",
+            camera_angle=(0.0, 0.0),
+        )
+    )
+    renderer_b = AvatarRenderer(
+        RenderConfig(
+            width=128,
+            height=128,
+            fps=24,
+            output_format="gif",
+            avatar_style="mesh",
+            mesh_backend="software_3d",
+            camera_angle=(45.0, 20.0),
+        )
+    )
+
+    result_a = renderer_a.render_mesh(motion_path, out_a)
+    result_b = renderer_b.render_mesh(motion_path, out_b)
+
+    assert result_a == out_a
+    assert result_b == out_b
+    assert out_a.exists()
+    assert out_b.exists()
+    assert out_a.read_bytes() != out_b.read_bytes()
 
 
 def test_render_mesh_falls_back_to_frames_if_writer_fails(tmp_path, monkeypatch):

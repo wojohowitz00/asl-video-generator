@@ -60,3 +60,11 @@
 # - linear.api-key
 # - github.org
 # - github.repo
+
+# Local stability settings for restricted/dev sandbox environments:
+# - force direct mode so `bd` does not attempt to bind a Unix RPC socket
+# - disable daemon auto-start retries that generate noisy startup errors
+# - pin SQLite db path for consistent backend selection
+no-daemon: true
+auto-start-daemon: false
+db: ".beads/beads.db"

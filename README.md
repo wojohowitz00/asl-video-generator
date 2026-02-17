@@ -36,6 +36,8 @@ uv run asl-render ./output/library.poses.json --output ./output/library.mp4 --mo
 
 1. Generate poses: `uv run python scripts/generate_poses.py --output ./output/poses`
 2. Render videos: `uv run python scripts/render_videos.py --input ./output/poses --output ./output/videos`
+   - Mesh controls (defaults): `--avatar-style skeleton --mesh-backend software_3d --camera-azimuth 0 --camera-elevation 0`
+   - Example mesh run: `uv run python scripts/render_videos.py --input ./output/poses --output ./output/videos --avatar-style mesh --mesh-backend software_3d --camera-azimuth 35 --camera-elevation 15`
 3. Upload + publish manifest: `uv run python scripts/upload_to_s3.py --input ./output/videos`
 
 The learning app should set `EXPO_PUBLIC_CONTENT_MANIFEST_URL` to the uploaded

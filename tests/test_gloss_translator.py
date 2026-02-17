@@ -1,11 +1,10 @@
 """Tests for gloss translator module."""
 
-import pytest
 
 
 def test_gloss_sequence_model():
     """Test GlossSequence Pydantic model."""
-    from asl_video_generator.gloss_translator import GlossSequence, NonManualMarkers
+    from asl_video_generator.gloss_translator import GlossSequence
 
     seq = GlossSequence(
         english="Hello",

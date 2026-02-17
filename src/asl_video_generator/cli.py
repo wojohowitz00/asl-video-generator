@@ -17,7 +17,6 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import Literal
 
 from dotenv import load_dotenv
 
@@ -211,7 +210,7 @@ def _run_single(args, config) -> None:
         mode=args.render_mode,
     )
 
-    print(f"\nComplete!")
+    print("\nComplete!")
     print(f"  Output: {result.video_path}")
     print(f"  Resolution: {result.width}x{result.height}")
     print(f"  FPS: {result.fps}")
@@ -318,7 +317,7 @@ def translate_cmd() -> None:
             output += "Negation: yes\n"
 
     if args.output:
-        args.output.write_text(output if args.format == "json" else result.model_dump_json(indent=2))
+        args.output.write_text(output)
         print(f"Saved to {args.output}")
     else:
         print(output)

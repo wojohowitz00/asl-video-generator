@@ -40,7 +40,7 @@ def download_wlasl_metadata(output_dir: Path) -> Path:
         print(f"Metadata already exists: {output_path}")
         return output_path
 
-    print(f"Downloading WLASL metadata...")
+    print("Downloading WLASL metadata...")
     response = httpx.get(metadata_url, follow_redirects=True)
     response.raise_for_status()
 
@@ -218,12 +218,13 @@ def add_alphabet_signs(output_db: Path) -> None:
     Args:
         output_db: Path to pose dictionary database.
     """
+    import numpy as np
+
     from asl_video_generator.pose_dictionary import (
         PoseDictionary,
         PoseKeypoints,
         SignPoseSequence,
     )
-    import numpy as np
 
     dictionary = PoseDictionary(db_path=output_db)
 

@@ -29,16 +29,14 @@ jobs:
       - name: Run test suite
         run: uv run --extra dev python -m pytest -q
 
-      - name: Run ruff checks (productionized mesh pipeline scope)
+      - name: Run ruff checks (repo source + scripts + tests)
         run: |
-          uv run --extra dev ruff check \
-            src/asl_video_generator/avatar_renderer.py \
-            src/asl_video_generator/vocabulary_generator.py \
-            tests/test_avatar_renderer_mesh.py \
-            tests/test_mesh_pipeline_e2e.py \
-            tests/test_vocabulary_generator.py
+          uv run --extra dev ruff check src scripts tests
 
-      - name: Run mypy checks (productionized mesh pipeline scope)
+      - name: Run mypy checks (expanded core module scope)
         run: |
           uv run --extra dev mypy --follow-imports=skip \
-            src/asl_video_generator/vocabulary_generator.py
+            src/asl_video_generator/vocabulary_generator.py \
+            src/asl_video_generator/config.py \
+            src/asl_video_generator/lesson_parser.py \
+            src/asl_video_generator/pose_dictionary.py
