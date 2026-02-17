@@ -17,8 +17,12 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from dotenv import load_dotenv
+
+if TYPE_CHECKING:
+    from .config import PipelineConfig
 
 
 def main() -> None:
@@ -158,7 +162,7 @@ def _check_device() -> None:
         print(f"  {key}: {value}")
 
 
-def _run_single(args, config) -> None:
+def _run_single(args: argparse.Namespace, config: "PipelineConfig") -> None:
     """Run pipeline for a single sentence."""
     from .diffusion_renderer import DiffusionRenderer
     from .gloss_translator import GlossTranslator
@@ -217,7 +221,7 @@ def _run_single(args, config) -> None:
     print(f"  Mode: {result.render_mode}")
 
 
-def _run_batch(args, config) -> None:
+def _run_batch(args: argparse.Namespace, config: "PipelineConfig") -> None:
     """Run pipeline for batch of sentences."""
     from .diffusion_renderer import DiffusionRenderer
     from .gloss_translator import GlossTranslator

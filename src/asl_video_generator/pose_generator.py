@@ -10,7 +10,7 @@ This module generates skeletal poses from ASL gloss sequences using:
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 import numpy as np
 
@@ -64,7 +64,7 @@ class PoseSequence:
     # Track which signs are missing from dictionary
     missing_signs: list[str] = field(default_factory=list)
 
-    def to_json(self) -> dict:
+    def to_json(self) -> dict[str, Any]:
         """Convert to JSON-serializable format."""
         return {
             "english": self.english,
@@ -561,7 +561,7 @@ class PoseGenerator:
 
 
 def generate_poses_batch(
-    sentences: list[dict],
+    sentences: list[dict[str, Any]],
     output_dir: Path,
     config: PipelineConfig | None = None,
 ) -> list[Path]:

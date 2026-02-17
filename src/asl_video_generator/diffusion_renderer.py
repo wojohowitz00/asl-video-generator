@@ -8,7 +8,7 @@ Optimized for Apple Silicon M4 with 24GB unified memory.
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 import numpy as np
 from PIL import Image, ImageDraw
@@ -63,8 +63,8 @@ class DiffusionRenderer:
         """
         self.config = config or load_config_from_env()
         self.reference_image = reference_image
-        self._pipe = None
-        self._controlnet = None
+        self._pipe: Any | None = None
+        self._controlnet: Any | None = None
         self._device_validated = False
 
     def _validate_device(self) -> bool:
@@ -211,6 +211,7 @@ class DiffusionRenderer:
 
         if not self._load_pipeline():
             return self._render_skeleton(pose_sequence, output_path)
+        assert self._pipe is not None
 
         settings = self.config.settings
         frames = pose_sequence.frames
@@ -226,7 +227,7 @@ class DiffusionRenderer:
         chunk_frames = int(settings.chunk_duration * settings.fps)
         overlap_frames = chunk_frames // 4  # 25% overlap for blending
 
-        all_video_frames = []
+        all_video_frames: list[Image.Image] = []
 
         for chunk_start in range(0, len(pose_images), chunk_frames - overlap_frames):
             chunk_end = min(chunk_start + chunk_frames, len(pose_images))

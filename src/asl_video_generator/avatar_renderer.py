@@ -13,9 +13,13 @@ Supports multiple rendering backends:
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 import numpy as np
+from numpy.typing import NDArray
+
+if TYPE_CHECKING:
+    from PIL.Image import Image as PILImage
 
 
 @dataclass
@@ -96,7 +100,7 @@ class AvatarRenderer:
             return self._render_mesh_video(frames, output_path, motion_data)
     
     def _render_pose_frames(
-        self, frames: list[dict], output_dir: Path
+        self, frames: list[dict[str, Any]], output_dir: Path
     ) -> Path:
         """Render pose frames as individual images."""
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -108,7 +112,7 @@ class AvatarRenderer:
         return output_dir
     
     def _render_pose_video(
-        self, frames: list[dict], output_path: Path, metadata: dict
+        self, frames: list[dict[str, Any]], output_path: Path, metadata: dict[str, Any]
     ) -> Path:
         """Render poses as video using PIL + imageio."""
         try:
@@ -171,7 +175,7 @@ class AvatarRenderer:
             return self._render_pose_frames(frames, output_path.parent / "frames")
     
     def _render_mesh_frames(
-        self, frames: list[dict], output_dir: Path
+        self, frames: list[dict[str, Any]], output_dir: Path
     ) -> Path:
         """Render mesh frames as individual images."""
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -183,7 +187,7 @@ class AvatarRenderer:
         return output_dir
     
     def _render_mesh_video(
-        self, frames: list[dict], output_path: Path, metadata: dict
+        self, frames: list[dict[str, Any]], output_path: Path, metadata: dict[str, Any]
     ) -> Path:
         """Render mesh animation as video."""
         try:
@@ -217,7 +221,7 @@ class AvatarRenderer:
             if writer is not None:
                 writer.close()
 
-    def _sample_pose_values(self, values: list[float], count: int) -> np.ndarray:
+    def _sample_pose_values(self, values: list[float], count: int) -> NDArray[np.float64]:
         """Downsample or upsample pose coefficients to a fixed count."""
         if count <= 0:
             return np.array([], dtype=np.float64)
@@ -227,13 +231,18 @@ class AvatarRenderer:
 
         array = np.asarray(values, dtype=np.float64)
         if array.size == 1:
-            return np.repeat(array, count)
+            return cast(NDArray[np.float64], np.repeat(array, count))
 
         source_index = np.arange(array.size, dtype=np.float64)
         target_index = np.linspace(0.0, float(array.size - 1), num=count)
-        return np.asarray(np.interp(target_index, source_index, array), dtype=np.float64)
+        return cast(
+            NDArray[np.float64],
+            np.asarray(np.interp(target_index, source_index, array), dtype=np.float64),
+        )
 
-    def _build_mesh_image(self, frame: dict[str, Any], frame_index: int, total_frames: int):
+    def _build_mesh_image(
+        self, frame: dict[str, Any], frame_index: int, total_frames: int
+    ) -> "PILImage":
         """Dispatch mesh frame rendering to configured backend."""
         backend = self.config.mesh_backend
         if backend == "stylized":
@@ -244,7 +253,7 @@ class AvatarRenderer:
 
     def _build_mesh_image_stylized(
         self, frame: dict[str, Any], frame_index: int, total_frames: int
-    ):
+    ) -> "PILImage":
         """Create a stylized mesh visualization frame as a PIL image."""
         from PIL import Image, ImageDraw
 
@@ -314,7 +323,7 @@ class AvatarRenderer:
 
     def _build_mesh_image_software_3d(
         self, frame: dict[str, Any], frame_index: int, total_frames: int
-    ):
+    ) -> "PILImage":
         """Render mesh frame using software 3D triangle rasterization."""
         from PIL import Image, ImageDraw
 
@@ -402,7 +411,7 @@ class AvatarRenderer:
                 verts[v_idx][0] += 0.04 * float(right[idx])
                 verts[v_idx][2] -= 0.03 * float(right[idx])
 
-        faces: list[list[int]] = []
+        synthesized_faces: list[list[int]] = []
         for i in range(lat_count - 1):
             for j in range(lon_count):
                 nj = (j + 1) % lon_count
@@ -410,10 +419,10 @@ class AvatarRenderer:
                 b = i * lon_count + nj
                 c = (i + 1) * lon_count + j
                 d = (i + 1) * lon_count + nj
-                faces.append([a, c, b])
-                faces.append([b, c, d])
+                synthesized_faces.append([a, c, b])
+                synthesized_faces.append([b, c, d])
 
-        return np.asarray(verts, dtype=np.float64), np.asarray(faces, dtype=np.int64)
+        return np.asarray(verts, dtype=np.float64), np.asarray(synthesized_faces, dtype=np.int64)
 
     def _project_mesh(
         self, vertices: np.ndarray, frame: dict[str, Any]

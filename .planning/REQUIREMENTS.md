@@ -31,6 +31,11 @@
 - [x] **ENG-02**: Reduce core-module mypy debt and expand CI type-check scope.
 - [x] **OPS-01**: Stabilize Beads backend/daemon behavior for consistent local tracking commands.
 
+## v0.4 Typing Hardening Tranche (Completed)
+
+- [x] **TYPE-01**: Clear mypy errors across full `src/asl_video_generator` module scope.
+- [x] **TYPE-02**: Expand CI mypy gate to run against full package module tree.
+
 ## Out of Scope (Current Milestone)
 
 - Re-architecting the entire pipeline into new infrastructure.
@@ -52,3 +57,5 @@
 | ENG-01 | Phase 6 | asl-video-generator-v5u.4 |
 | ENG-02 | Phase 6 | asl-video-generator-v5u.5 |
 | OPS-01 | Phase 6 | asl-video-generator-v5u.6 |
+| TYPE-01 | Phase 7 | asl-video-generator-t9r.1, asl-video-generator-t9r.2, asl-video-generator-t9r.3 |
+| TYPE-02 | Phase 7 | asl-video-generator-t9r.4 |

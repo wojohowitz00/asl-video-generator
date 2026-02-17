@@ -5,20 +5,20 @@
 See: `.planning/PROJECT.md` (updated 2026-02-17)
 
 Core value: reproducible text-to-ASL video generation and publishing pipeline.
-Current focus: v0.3 completed; preparing next backlog increment from stabilized baseline.
+Current focus: v0.4 typing tranche completed; preparing next feature-focused backlog increment.
 
 ## Current Position
 
-Phase: Milestone complete (through Phase 6)
+Phase: Milestone complete (through Phase 7)
 Plan status: Complete
-Last activity: 2026-02-17 - Completed `asl-video-generator-v5u.5` and `asl-video-generator-v5u.6`
+Last activity: 2026-02-17 - Completed `asl-video-generator-t9r` (full-source mypy hardening + CI type gate expansion)
 
 Progress: [##########] v0.2 and v0.3 complete
 
 ## Performance Snapshot
 
 - Local test status: `40 passed`
-- Beads summary: `0 open`, `0 in_progress`, `0 blocked`, `0 ready`, `13 closed`
+- Beads summary: `0 open`, `0 in_progress`, `0 blocked`, `0 ready`, `18 closed`
 - Current blocked item: none
 
 ## Pending Todos
@@ -27,7 +27,7 @@ Progress: [##########] v0.2 and v0.3 complete
 
 ## Blockers / Concerns
 
-- Remaining repo-wide mypy strictness debt exists outside the currently gated core module set.
+- Current mypy gate is clean across `src/asl_video_generator` with `--follow-imports=skip`; stricter typing modes can be a future enhancement.
 - Beads is now pinned to direct SQLite mode for this environment (`.beads/config.yaml`).
 
 ## Session Continuity

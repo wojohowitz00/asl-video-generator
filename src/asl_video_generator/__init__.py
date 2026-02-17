@@ -23,6 +23,8 @@ CLI usage:
 
 __version__ = "0.1.0"
 
+from typing import Literal, cast
+
 from .config import (
     DeviceType,
     PipelineConfig,
@@ -121,12 +123,19 @@ def generate_asl_video(
     # Configure
     config = load_config_from_env()
     config.quality = QualityPreset(quality)
-    config.llm_provider = provider
+    if provider not in {"openai", "gemini", "ollama"}:
+        raise ValueError(f"Unsupported provider: {provider}")
+    provider_value = cast(Literal["openai", "gemini", "ollama"], provider)
+    config.llm_provider = provider_value
+
+    if render_mode not in {"diffusion", "skeleton", "auto"}:
+        raise ValueError(f"Unsupported render mode: {render_mode}")
+    render_mode_value = cast(Literal["diffusion", "skeleton", "auto"], render_mode)
 
     output = Path(output_path)
 
     # Stage 1: Translate
-    translator = GlossTranslator(provider=provider, config=config)
+    translator = GlossTranslator(provider=provider_value, config=config)
     gloss_seq = translator.translate(text)
 
     # Stage 2: Generate poses
@@ -138,6 +147,6 @@ def generate_asl_video(
         config=config,
         reference_image=Path(reference_image) if reference_image else None,
     )
-    result = renderer.render(pose_seq, output, mode=render_mode)
+    result = renderer.render(pose_seq, output, mode=render_mode_value)
 
     return str(result.video_path)

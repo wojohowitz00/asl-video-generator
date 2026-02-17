@@ -1,6 +1,6 @@
 # Codebase Concerns
 
-Analysis Date: 2026-02-17 (updated after v5u completion)
+Analysis Date: 2026-02-17 (updated after t9r completion)
 
 ## Critical Functional Gaps
 
@@ -10,8 +10,8 @@ Analysis Date: 2026-02-17 (updated after v5u completion)
 ## Reliability Gaps
 
 - CI lint gate now covers `src/`, `scripts/`, and `tests/`.
-- CI mypy gate now covers four core modules (`vocabulary_generator`, `config`, `lesson_parser`, `pose_dictionary`).
-- Additional strict typing debt remains in other modules and can be expanded incrementally in future phases.
+- CI mypy gate now covers full `src/asl_video_generator` scope (with `--follow-imports=skip`).
+- Further type hardening opportunity remains for stricter modes (for example reducing reliance on `Any` across external client boundaries).
 
 ## Documentation Drift
 

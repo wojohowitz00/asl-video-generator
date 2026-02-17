@@ -33,10 +33,6 @@ jobs:
         run: |
           uv run --extra dev ruff check src scripts tests
 
-      - name: Run mypy checks (expanded core module scope)
+      - name: Run mypy checks (full source module scope)
         run: |
-          uv run --extra dev mypy --follow-imports=skip \
-            src/asl_video_generator/vocabulary_generator.py \
-            src/asl_video_generator/config.py \
-            src/asl_video_generator/lesson_parser.py \
-            src/asl_video_generator/pose_dictionary.py
+          uv run --extra dev mypy --follow-imports=skip src/asl_video_generator

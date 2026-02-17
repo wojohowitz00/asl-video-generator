@@ -4,7 +4,8 @@
 
 - ✅ **v0.1 Baseline Pipeline** — core implementation and content publishing landed (2026-02-01 to 2026-02-02)
 - ✅ **v0.2 Production Mesh Pipeline** — implementation and validation complete (2026-02-17)
-- 🚧 **v0.3 Rendering Fidelity + Code Health** — planned next milestone (created 2026-02-17)
+- ✅ **v0.3 Rendering Fidelity + Code Health** — complete (2026-02-17)
+- ✅ **v0.4 Typing Hardening Tranche** — complete (2026-02-17)
 
 ## Phases
 
@@ -14,6 +15,7 @@
 - [x] **Phase 4: Reliability Hardening** - CI quality gates + broader regression coverage
 - [x] **Phase 5: Rendering Fidelity Upgrade** - true 3D mesh rasterization + fidelity controls
 - [x] **Phase 6: Repository Health Hardening** - lint/type debt reduction + tracking stability
+- [x] **Phase 7: Typing Hardening Tranche** - full-source mypy cleanup + CI type gate expansion
 
 ## Phase Details
 
@@ -73,6 +75,21 @@ Plans / linked Beads issues:
 - [x] `asl-video-generator-v5u.5` - Reduce mypy debt for core modules and broaden type gate (depends on .4)
 - [x] `asl-video-generator-v5u.6` - Stabilize beads backend config for this repo
 
+### Phase 7: Typing Hardening Tranche
+**Goal**: Remove remaining full-source mypy errors and broaden CI type checks to package-wide scope.
+**Depends on**: Phase 6 complete
+**Requirements**: TYPE-01, TYPE-02
+**Success Criteria**:
+1. `mypy --follow-imports=skip src/asl_video_generator` passes locally.
+2. CI mypy step checks full package source scope.
+3. Changes preserve existing runtime behavior and test pass status.
+
+Plans / linked Beads issues:
+- [x] `asl-video-generator-t9r.1` - Fix mypy typing debt in avatar_renderer + cli/__init__ glue
+- [x] `asl-video-generator-t9r.2` - Fix mypy typing debt in gloss_translator
+- [x] `asl-video-generator-t9r.3` - Fix mypy typing debt in diffusion_renderer + pose_generator
+- [x] `asl-video-generator-t9r.4` - Expand CI mypy gate to include newly clean modules
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -83,3 +100,4 @@ Plans / linked Beads issues:
 | 4. Reliability Hardening | 1/1 | Complete | 2026-02-17 |
 | 5. Rendering Fidelity Upgrade | 3/3 | Complete | 2026-02-17 |
 | 6. Repository Health Hardening | 3/3 | Complete | 2026-02-17 |
+| 7. Typing Hardening Tranche | 4/4 | Complete | 2026-02-17 |

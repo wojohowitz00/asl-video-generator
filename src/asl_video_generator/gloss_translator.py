@@ -15,14 +15,14 @@ import os
 import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 from pydantic import BaseModel, Field
 
 from .config import PipelineConfig, load_config_from_env
 
 
-class NonManualMarkers(BaseModel):
+class NonManualMarkers(BaseModel):  # type: ignore[misc]
     """Non-manual markers for ASL grammatical expression.
 
     NMMs convey critical grammatical information in ASL:
@@ -62,7 +62,7 @@ class NonManualMarkers(BaseModel):
     end_index: int | None = None  # None means until end
 
 
-class GlossSequence(BaseModel):
+class GlossSequence(BaseModel):  # type: ignore[misc]
     """ASL gloss sequence with timing and NMM annotations."""
 
     english: str
@@ -148,7 +148,7 @@ class TranslationCache:
 
     cache_path: Path
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.cache_path.parent.mkdir(parents=True, exist_ok=True)
         self._init_db()
 
@@ -347,15 +347,14 @@ BATHROOM, EAT, DRINK, SLEEP, HAPPY, SAD, TIRED"""
         self.model = model or self._default_model(provider)
         self.restrict_vocabulary = restrict_vocabulary
         self._client = None
+        self._cache: TranslationCache | None = None
 
         # Initialize cache
         if enable_cache:
             cache_path = self.config.cache_dir / "translation_cache.db"
             self._cache = TranslationCache(cache_path)
-        else:
-            self._cache = None
 
-    def _default_model(self, provider: str) -> str:
+    def _default_model(self, provider: Literal["openai", "gemini", "ollama"]) -> str:
         """Get default model for provider."""
         return {
             "openai": "gpt-4o",
@@ -363,7 +362,7 @@ BATHROOM, EAT, DRINK, SLEEP, HAPPY, SAD, TIRED"""
             "ollama": "llama3.2",
         }.get(provider, "gpt-4o")
 
-    def _get_openai_client(self):
+    def _get_openai_client(self) -> Any:
         """Lazy load OpenAI client."""
         if self._client is None:
             from openai import OpenAI
@@ -373,7 +372,7 @@ BATHROOM, EAT, DRINK, SLEEP, HAPPY, SAD, TIRED"""
             self._client = OpenAI(api_key=api_key)
         return self._client
 
-    def _get_gemini_client(self):
+    def _get_gemini_client(self) -> Any:
         """Lazy load Gemini client."""
         if self._client is None:
             import google.generativeai as genai
@@ -384,7 +383,7 @@ BATHROOM, EAT, DRINK, SLEEP, HAPPY, SAD, TIRED"""
             self._client = genai.GenerativeModel(self.model)
         return self._client
 
-    def _get_ollama_client(self):
+    def _get_ollama_client(self) -> Any:
         """Lazy load Ollama client."""
         if self._client is None:
             import ollama
@@ -608,5 +607,8 @@ def translate_batch(
     Returns:
         List of GlossSequence objects.
     """
-    translator = GlossTranslator(provider=provider, config=config)
+    if provider not in {"openai", "gemini", "ollama"}:
+        raise ValueError(f"Unsupported provider: {provider}")
+    provider_value = cast(Literal["openai", "gemini", "ollama"], provider)
+    translator = GlossTranslator(provider=provider_value, config=config)
     return [translator.translate(text) for text in texts]
