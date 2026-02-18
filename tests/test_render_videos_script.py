@@ -149,3 +149,48 @@ def test_main_routes_skeleton_style_to_render_poses(monkeypatch, tmp_path):
 
     assert calls["poses"] == 1
     assert calls["mesh"] == 0
+
+
+def test_main_routes_stylized_style_to_render_mesh(monkeypatch, tmp_path):
+    """main should route stylized avatar style to AvatarRenderer.render_mesh."""
+    module = _load_render_videos_module()
+
+    input_dir = tmp_path / "poses"
+    output_dir = tmp_path / "videos"
+    input_dir.mkdir()
+    motion_path = input_dir / "sample.json"
+    motion_path.write_text(json.dumps({"frames": []}))
+
+    calls = {"poses": 0, "mesh": 0}
+
+    class _FakeRenderer:
+        def __init__(self, _config):
+            pass
+
+        def render_poses(self, _input_path, output_path):
+            calls["poses"] += 1
+            output_path.write_text("poses")
+            return output_path
+
+        def render_mesh(self, _input_path, output_path):
+            calls["mesh"] += 1
+            output_path.write_text("mesh")
+            return output_path
+
+    monkeypatch.setattr(module, "AvatarRenderer", _FakeRenderer)
+
+    module.main(
+        [
+            "--input",
+            str(input_dir),
+            "--output",
+            str(output_dir),
+            "--format",
+            "gif",
+            "--avatar-style",
+            "stylized",
+        ]
+    )
+
+    assert calls["mesh"] == 1
+    assert calls["poses"] == 0

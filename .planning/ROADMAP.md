@@ -9,6 +9,7 @@
 - ✅ **v0.5 Optional Pyrender Backend Hardening** — complete (2026-02-17)
 - ✅ **v0.6 Native Pyrender Backend MVP** — complete (2026-02-18)
 - ✅ **v0.7 Render Script Routing Correctness** — complete (2026-02-18)
+- ✅ **v0.8 Stylized Routing Completion** — complete (2026-02-18)
 
 ## Phases
 
@@ -22,6 +23,7 @@
 - [x] **Phase 8: Optional Backend Hardening** - pyrender routing/fallback robustness + docs
 - [x] **Phase 9: Native Pyrender Backend MVP** - native offscreen pyrender render path + runtime fallback safety
 - [x] **Phase 10: Render Script Routing Correctness** - mesh avatar-style batch runs invoke mesh renderer path
+- [x] **Phase 11: Stylized Routing Completion** - stylized avatar-style batch runs invoke mesh renderer path
 
 ## Phase Details
 
@@ -138,6 +140,20 @@ Plans / linked Beads issues:
 - [x] `asl-dy5.2` - Add regression tests for render_videos style-based renderer routing
 - [x] `asl-dy5.3` - Update planning docs for v0.7 routing fix tranche
 
+### Phase 11: Stylized Routing Completion
+**Goal**: Complete batch script routing behavior so stylized avatar style uses mesh rendering path.
+**Depends on**: Phase 10 complete
+**Requirements**: STY-01, STY-02
+**Success Criteria**:
+1. `--avatar-style stylized` in `scripts/render_videos.py` calls `AvatarRenderer.render_mesh`.
+2. Existing mesh and skeleton routing behavior remains correct.
+3. Regression tests cover stylized style route.
+
+Plans / linked Beads issues:
+- [x] `asl-o3d.1` - Route stylized avatar-style runs to AvatarRenderer.render_mesh
+- [x] `asl-o3d.2` - Add regression test for stylized style routing
+- [x] `asl-o3d.3` - Update planning docs for v0.8 routing completion
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -152,3 +168,4 @@ Plans / linked Beads issues:
 | 8. Optional Backend Hardening | 3/3 | Complete | 2026-02-17 |
 | 9. Native Pyrender Backend MVP | 3/3 | Complete | 2026-02-18 |
 | 10. Render Script Routing Correctness | 3/3 | Complete | 2026-02-18 |
+| 11. Stylized Routing Completion | 3/3 | Complete | 2026-02-18 |

@@ -143,7 +143,7 @@ def main(argv: list[str] | None = None) -> None:
             
         try:
             print(f"Rendering {pose_id}...")
-            if config.avatar_style == "mesh":
+            if config.avatar_style in {"mesh", "stylized"}:
                 renderer.render_mesh(json_path, output_path)
             else:
                 renderer.render_poses(json_path, output_path)

@@ -53,6 +53,11 @@
 - [x] **RND-01**: `scripts/render_videos.py` routes `--avatar-style mesh` runs to `AvatarRenderer.render_mesh`.
 - [x] **RND-02**: Script routing behavior has regression tests for mesh vs. non-mesh avatar styles.
 
+## v0.8 Stylized Routing Completion (Completed)
+
+- [x] **STY-01**: `scripts/render_videos.py` routes `--avatar-style stylized` runs to `AvatarRenderer.render_mesh`.
+- [x] **STY-02**: Regression tests cover stylized style routing to mesh renderer path.
+
 ## Out of Scope (Current Milestone)
 
 - Re-architecting the entire pipeline into new infrastructure.
@@ -84,3 +89,5 @@
 | NPY-03 | Phase 9 | asl-video-generator-r6p.2, asl-video-generator-r6p.3 |
 | RND-01 | Phase 10 | asl-dy5.1 |
 | RND-02 | Phase 10 | asl-dy5.2 |
+| STY-01 | Phase 11 | asl-o3d.1 |
+| STY-02 | Phase 11 | asl-o3d.2 |
