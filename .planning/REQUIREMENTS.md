@@ -63,6 +63,11 @@
 - [x] **R3D-01**: Quality workflow includes dedicated `render3d` smoke job installing optional extras.
 - [x] **R3D-02**: Repository includes render3d smoke tests validating optional dependency availability path.
 
+## v1.0 Offscreen Smoke Execution (Completed)
+
+- [x] **GLS-01**: Render3d smoke coverage includes actual offscreen pyrender render execution assertion.
+- [x] **GLS-02**: Offscreen smoke assertion skips safely when GL context is unavailable in the environment.
+
 ## Out of Scope (Current Milestone)
 
 - Re-architecting the entire pipeline into new infrastructure.
@@ -98,3 +103,5 @@
 | STY-02 | Phase 11 | asl-o3d.2 |
 | R3D-01 | Phase 12 | asl-cwy.1, asl-cwy.2 |
 | R3D-02 | Phase 12 | asl-cwy.2 |
+| GLS-01 | Phase 13 | asl-dmv.1 |
+| GLS-02 | Phase 13 | asl-dmv.1 |

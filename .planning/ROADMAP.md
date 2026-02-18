@@ -11,6 +11,7 @@
 - ✅ **v0.7 Render Script Routing Correctness** — complete (2026-02-18)
 - ✅ **v0.8 Stylized Routing Completion** — complete (2026-02-18)
 - ✅ **v0.9 Render3D CI Smoke Coverage** — complete (2026-02-18)
+- ✅ **v1.0 Offscreen Smoke Execution** — complete (2026-02-18)
 
 ## Phases
 
@@ -26,6 +27,7 @@
 - [x] **Phase 10: Render Script Routing Correctness** - mesh avatar-style batch runs invoke mesh renderer path
 - [x] **Phase 11: Stylized Routing Completion** - stylized avatar-style batch runs invoke mesh renderer path
 - [x] **Phase 12: Render3D CI Smoke Coverage** - optional render3d dependency path validated in CI
+- [x] **Phase 13: Offscreen Smoke Execution** - render3d smoke includes real offscreen render assertion
 
 ## Phase Details
 
@@ -170,6 +172,19 @@ Plans / linked Beads issues:
 - [x] `asl-cwy.2` - Add optional-deps smoke test and wire render3d CI job
 - [x] `asl-cwy.3` - Update planning docs for v0.9 CI smoke tranche
 
+### Phase 13: Offscreen Smoke Execution
+**Goal**: Extend render3d smoke coverage to include actual offscreen render execution behavior.
+**Depends on**: Phase 12 complete
+**Requirements**: GLS-01, GLS-02
+**Success Criteria**:
+1. Smoke suite includes an offscreen pyrender execution assertion.
+2. The offscreen assertion skips safely on environments lacking GL context.
+3. Full repo verification continues passing after smoke expansion.
+
+Plans / linked Beads issues:
+- [x] `asl-dmv.1` - Add safe-skip offscreen render smoke test
+- [x] `asl-dmv.2` - Update planning docs for v1.0 offscreen smoke tranche
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -186,3 +201,4 @@ Plans / linked Beads issues:
 | 10. Render Script Routing Correctness | 3/3 | Complete | 2026-02-18 |
 | 11. Stylized Routing Completion | 3/3 | Complete | 2026-02-18 |
 | 12. Render3D CI Smoke Coverage | 3/3 | Complete | 2026-02-18 |
+| 13. Offscreen Smoke Execution | 2/2 | Complete | 2026-02-18 |
