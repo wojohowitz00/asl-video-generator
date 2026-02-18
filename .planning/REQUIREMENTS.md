@@ -58,6 +58,11 @@
 - [x] **STY-01**: `scripts/render_videos.py` routes `--avatar-style stylized` runs to `AvatarRenderer.render_mesh`.
 - [x] **STY-02**: Regression tests cover stylized style routing to mesh renderer path.
 
+## v0.9 Render3D CI Smoke Coverage (Completed)
+
+- [x] **R3D-01**: Quality workflow includes dedicated `render3d` smoke job installing optional extras.
+- [x] **R3D-02**: Repository includes render3d smoke tests validating optional dependency availability path.
+
 ## Out of Scope (Current Milestone)
 
 - Re-architecting the entire pipeline into new infrastructure.
@@ -91,3 +96,5 @@
 | RND-02 | Phase 10 | asl-dy5.2 |
 | STY-01 | Phase 11 | asl-o3d.1 |
 | STY-02 | Phase 11 | asl-o3d.2 |
+| R3D-01 | Phase 12 | asl-cwy.1, asl-cwy.2 |
+| R3D-02 | Phase 12 | asl-cwy.2 |

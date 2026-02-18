@@ -1,6 +1,6 @@
 # Codebase Concerns
 
-Analysis Date: 2026-02-18 (updated after o3d completion)
+Analysis Date: 2026-02-18 (updated after cwy completion)
 
 ## Critical Functional Gaps
 
@@ -8,7 +8,7 @@ Analysis Date: 2026-02-18 (updated after o3d completion)
 - Optional `pyrender` backend path now has explicit routing + tested fallback behavior.
 - Native pyrender offscreen rendering is now enabled for `mesh_backend=pyrender` when optional deps are installed.
 - `scripts/render_videos.py` now routes mesh and stylized avatar-style runs to `render_mesh` (fixed from previous unconditional pose route).
-- CI/dev verification currently does not require `render3d` extras, so native pyrender coverage remains dependency-stubbed in unit tests.
+- CI now includes a dedicated `render3d_smoke` job to validate optional extras installation and dependency probe behavior.
 
 ## Reliability Gaps
 

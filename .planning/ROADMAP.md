@@ -10,6 +10,7 @@
 - ✅ **v0.6 Native Pyrender Backend MVP** — complete (2026-02-18)
 - ✅ **v0.7 Render Script Routing Correctness** — complete (2026-02-18)
 - ✅ **v0.8 Stylized Routing Completion** — complete (2026-02-18)
+- ✅ **v0.9 Render3D CI Smoke Coverage** — complete (2026-02-18)
 
 ## Phases
 
@@ -24,6 +25,7 @@
 - [x] **Phase 9: Native Pyrender Backend MVP** - native offscreen pyrender render path + runtime fallback safety
 - [x] **Phase 10: Render Script Routing Correctness** - mesh avatar-style batch runs invoke mesh renderer path
 - [x] **Phase 11: Stylized Routing Completion** - stylized avatar-style batch runs invoke mesh renderer path
+- [x] **Phase 12: Render3D CI Smoke Coverage** - optional render3d dependency path validated in CI
 
 ## Phase Details
 
@@ -154,6 +156,20 @@ Plans / linked Beads issues:
 - [x] `asl-o3d.2` - Add regression test for stylized style routing
 - [x] `asl-o3d.3` - Update planning docs for v0.8 routing completion
 
+### Phase 12: Render3D CI Smoke Coverage
+**Goal**: Continuously validate optional `render3d` dependency path in CI.
+**Depends on**: Phase 9 complete
+**Requirements**: R3D-01, R3D-02
+**Success Criteria**:
+1. Quality workflow defines a dedicated render3d smoke job with optional extras install.
+2. Smoke tests validate optional dependency probe behavior for `pyrender` path.
+3. A workflow guard test prevents accidental removal of render3d smoke coverage.
+
+Plans / linked Beads issues:
+- [x] `asl-cwy.1` - Add CI guard test for render3d smoke job in quality workflow
+- [x] `asl-cwy.2` - Add optional-deps smoke test and wire render3d CI job
+- [x] `asl-cwy.3` - Update planning docs for v0.9 CI smoke tranche
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -169,3 +185,4 @@ Plans / linked Beads issues:
 | 9. Native Pyrender Backend MVP | 3/3 | Complete | 2026-02-18 |
 | 10. Render Script Routing Correctness | 3/3 | Complete | 2026-02-18 |
 | 11. Stylized Routing Completion | 3/3 | Complete | 2026-02-18 |
+| 12. Render3D CI Smoke Coverage | 3/3 | Complete | 2026-02-18 |

@@ -36,3 +36,26 @@ jobs:
       - name: Run mypy checks (full source module scope)
         run: |
           uv run --extra dev mypy --follow-imports=skip src/asl_video_generator
+
+  render3d_smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install dependencies (dev + render3d)
+        run: uv sync --extra dev --extra render3d
+
+      - name: Run render3d smoke tests
+        run: |
+          uv run --extra dev --extra render3d python -m pytest -q tests/test_avatar_renderer_render3d_smoke.py
