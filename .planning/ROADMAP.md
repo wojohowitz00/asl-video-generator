@@ -8,6 +8,7 @@
 - ✅ **v0.4 Typing Hardening Tranche** — complete (2026-02-17)
 - ✅ **v0.5 Optional Pyrender Backend Hardening** — complete (2026-02-17)
 - ✅ **v0.6 Native Pyrender Backend MVP** — complete (2026-02-18)
+- ✅ **v0.7 Render Script Routing Correctness** — complete (2026-02-18)
 
 ## Phases
 
@@ -20,6 +21,7 @@
 - [x] **Phase 7: Typing Hardening Tranche** - full-source mypy cleanup + CI type gate expansion
 - [x] **Phase 8: Optional Backend Hardening** - pyrender routing/fallback robustness + docs
 - [x] **Phase 9: Native Pyrender Backend MVP** - native offscreen pyrender render path + runtime fallback safety
+- [x] **Phase 10: Render Script Routing Correctness** - mesh avatar-style batch runs invoke mesh renderer path
 
 ## Phase Details
 
@@ -122,6 +124,20 @@ Plans / linked Beads issues:
 - [x] `asl-video-generator-r6p.2` - Add unit tests for native pyrender path and fallback-on-error behavior
 - [x] `asl-video-generator-r6p.3` - Add optional render3d dependency group + docs
 
+### Phase 10: Render Script Routing Correctness
+**Goal**: Ensure batch rendering script routes mesh-style jobs through the mesh renderer path.
+**Depends on**: Phase 9 complete
+**Requirements**: RND-01, RND-02
+**Success Criteria**:
+1. `--avatar-style mesh` in `scripts/render_videos.py` calls `AvatarRenderer.render_mesh`.
+2. Non-mesh styles continue to use `AvatarRenderer.render_poses`.
+3. Regression tests cover both routing paths.
+
+Plans / linked Beads issues:
+- [x] `asl-dy5.1` - Route mesh avatar-style runs to AvatarRenderer.render_mesh
+- [x] `asl-dy5.2` - Add regression tests for render_videos style-based renderer routing
+- [x] `asl-dy5.3` - Update planning docs for v0.7 routing fix tranche
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -135,3 +151,4 @@ Plans / linked Beads issues:
 | 7. Typing Hardening Tranche | 4/4 | Complete | 2026-02-17 |
 | 8. Optional Backend Hardening | 3/3 | Complete | 2026-02-17 |
 | 9. Native Pyrender Backend MVP | 3/3 | Complete | 2026-02-18 |
+| 10. Render Script Routing Correctness | 3/3 | Complete | 2026-02-18 |

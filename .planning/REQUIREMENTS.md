@@ -48,6 +48,11 @@
 - [x] **NPY-02**: Keep deterministic software fallback when pyrender render path raises runtime errors.
 - [x] **NPY-03**: Add deterministic unit tests and optional dependency docs/packaging for native pyrender mode.
 
+## v0.7 Render Script Routing Correctness (Completed)
+
+- [x] **RND-01**: `scripts/render_videos.py` routes `--avatar-style mesh` runs to `AvatarRenderer.render_mesh`.
+- [x] **RND-02**: Script routing behavior has regression tests for mesh vs. non-mesh avatar styles.
+
 ## Out of Scope (Current Milestone)
 
 - Re-architecting the entire pipeline into new infrastructure.
@@ -77,3 +82,5 @@
 | NPY-01 | Phase 9 | asl-video-generator-r6p.1 |
 | NPY-02 | Phase 9 | asl-video-generator-r6p.1, asl-video-generator-r6p.2 |
 | NPY-03 | Phase 9 | asl-video-generator-r6p.2, asl-video-generator-r6p.3 |
+| RND-01 | Phase 10 | asl-dy5.1 |
+| RND-02 | Phase 10 | asl-dy5.2 |

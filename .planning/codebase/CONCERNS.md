@@ -1,12 +1,13 @@
 # Codebase Concerns
 
-Analysis Date: 2026-02-18 (updated after r6p completion)
+Analysis Date: 2026-02-18 (updated after dy5 completion)
 
 ## Critical Functional Gaps
 
 - Software 3D mesh backend and artifact-level fidelity regression tests are now in place.
 - Optional `pyrender` backend path now has explicit routing + tested fallback behavior.
 - Native pyrender offscreen rendering is now enabled for `mesh_backend=pyrender` when optional deps are installed.
+- `scripts/render_videos.py` now routes mesh avatar-style runs to `render_mesh` (fixed from previous unconditional pose route).
 - CI/dev verification currently does not require `render3d` extras, so native pyrender coverage remains dependency-stubbed in unit tests.
 
 ## Reliability Gaps

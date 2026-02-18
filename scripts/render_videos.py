@@ -143,7 +143,10 @@ def main(argv: list[str] | None = None) -> None:
             
         try:
             print(f"Rendering {pose_id}...")
-            renderer.render_poses(json_path, output_path)
+            if config.avatar_style == "mesh":
+                renderer.render_mesh(json_path, output_path)
+            else:
+                renderer.render_poses(json_path, output_path)
             rendered_count += 1
 
             base = manifest_map.get(pose_id, {})
