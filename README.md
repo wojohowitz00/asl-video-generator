@@ -14,6 +14,9 @@ English Text → LLM (GPT-4o/Gemini) → ASL Gloss → SignGen → Video
 # Install dependencies
 uv sync
 
+# Optional: native pyrender mesh backend dependencies
+uv sync --extra render3d
+
 # Full pipeline (text -> gloss -> poses -> video)
 uv run asl-generate "Hello, how are you?" --output ./output/hello.mp4
 
@@ -38,7 +41,7 @@ uv run asl-render ./output/library.poses.json --output ./output/library.mp4 --mo
 2. Render videos: `uv run python scripts/render_videos.py --input ./output/poses --output ./output/videos`
    - Mesh controls (defaults): `--avatar-style skeleton --mesh-backend software_3d --camera-azimuth 0 --camera-elevation 0`
    - Example mesh run: `uv run python scripts/render_videos.py --input ./output/poses --output ./output/videos --avatar-style mesh --mesh-backend software_3d --camera-azimuth 35 --camera-elevation 15`
-   - Optional backend: `--mesh-backend pyrender` will be used when `pyrender`/`trimesh` are installed; otherwise renderer falls back to `software_3d`.
+   - Optional backend: `--mesh-backend pyrender` uses native offscreen pyrender rendering when `uv sync --extra render3d` dependencies are installed; otherwise renderer falls back to `software_3d`.
 3. Upload + publish manifest: `uv run python scripts/upload_to_s3.py --input ./output/videos`
 
 The learning app should set `EXPO_PUBLIC_CONTENT_MANIFEST_URL` to the uploaded

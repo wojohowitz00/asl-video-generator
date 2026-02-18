@@ -251,14 +251,27 @@ class AvatarRenderer:
             return self._build_mesh_image_stylized(frame, frame_index, total_frames)
         if backend == "pyrender":
             if self._is_pyrender_available():
-                return self._build_mesh_image_pyrender(frame, frame_index, total_frames)
-            if not self._pyrender_fallback_warned:
-                print("pyrender backend unavailable; falling back to software_3d mesh renderer.")
-                self._pyrender_fallback_warned = True
+                try:
+                    return self._build_mesh_image_pyrender(frame, frame_index, total_frames)
+                except Exception as exc:
+                    self._warn_pyrender_fallback(
+                        "pyrender backend failed "
+                        f"({exc}); falling back to software_3d mesh renderer."
+                    )
+                    return self._build_mesh_image_software_3d(frame, frame_index, total_frames)
+            self._warn_pyrender_fallback(
+                "pyrender backend unavailable; falling back to software_3d mesh renderer."
+            )
             return self._build_mesh_image_software_3d(frame, frame_index, total_frames)
         if backend == "software_3d":
             return self._build_mesh_image_software_3d(frame, frame_index, total_frames)
         return self._build_mesh_image_stylized(frame, frame_index, total_frames)
+
+    def _warn_pyrender_fallback(self, message: str) -> None:
+        """Emit one-time warning when pyrender backend falls back to software."""
+        if not self._pyrender_fallback_warned:
+            print(message)
+            self._pyrender_fallback_warned = True
 
     def _is_pyrender_available(self) -> bool:
         """Check if optional pyrender dependencies are available."""
@@ -276,11 +289,114 @@ class AvatarRenderer:
     def _build_mesh_image_pyrender(
         self, frame: dict[str, Any], frame_index: int, total_frames: int
     ) -> "PILImage":
-        """Render mesh frame via pyrender path.
+        """Render mesh frame via optional pyrender offscreen path."""
+        from PIL import Image
 
-        Currently uses software_3d rendering as deterministic fallback implementation.
-        """
-        return self._build_mesh_image_software_3d(frame, frame_index, total_frames)
+        vertices, faces = self._extract_or_synthesize_mesh(frame)
+        rgb = self._render_with_pyrender(vertices, faces, frame)
+        img = Image.fromarray(rgb, mode="RGB")
+        return cast("PILImage", img)
+
+    def _render_with_pyrender(
+        self, vertices: np.ndarray, faces: np.ndarray, frame: dict[str, Any]
+    ) -> NDArray[np.uint8]:
+        """Render mesh using pyrender offscreen renderer."""
+        import pyrender
+        import trimesh
+
+        mesh = trimesh.Trimesh(vertices=vertices, faces=faces, process=False)
+        bg = np.array(
+            [
+                self.config.background_color[0] / 255.0,
+                self.config.background_color[1] / 255.0,
+                self.config.background_color[2] / 255.0,
+                1.0,
+            ],
+            dtype=np.float32,
+        )
+        scene = pyrender.Scene(
+            bg_color=bg,
+            ambient_light=np.array([0.25, 0.25, 0.25], dtype=np.float32),
+        )
+        scene.add(pyrender.Mesh.from_trimesh(mesh, smooth=False))
+
+        camera = pyrender.PerspectiveCamera(yfov=float(np.pi / 3.0))
+        camera_pose = self._build_pyrender_camera_pose(frame)
+        scene.add(camera, pose=camera_pose)
+
+        key_light = pyrender.DirectionalLight(color=np.ones(3, dtype=np.float32), intensity=2.2)
+        fill_light = pyrender.DirectionalLight(color=np.ones(3, dtype=np.float32), intensity=0.9)
+        scene.add(key_light, pose=camera_pose)
+        fill_pose = np.array(camera_pose, copy=True)
+        fill_pose[0, 3] -= 0.5
+        fill_pose[1, 3] += 0.25
+        scene.add(fill_light, pose=fill_pose)
+
+        renderer = pyrender.OffscreenRenderer(
+            viewport_width=self.config.width,
+            viewport_height=self.config.height,
+        )
+        try:
+            color, _depth = renderer.render(scene)
+        finally:
+            renderer.delete()
+
+        if color.ndim != 3:
+            raise ValueError("Unexpected pyrender output shape.")
+
+        if color.shape[2] >= 3:
+            rgb = color[:, :, :3]
+        else:
+            raise ValueError("pyrender output missing RGB channels.")
+
+        return np.asarray(rgb, dtype=np.uint8)
+
+    def _build_pyrender_camera_pose(self, frame: dict[str, Any]) -> NDArray[np.float64]:
+        """Construct world pose for pyrender camera from config and frame translation."""
+        azimuth_deg, elevation_deg = self.config.camera_angle
+        azimuth = float(np.deg2rad(azimuth_deg))
+        elevation = float(np.deg2rad(elevation_deg))
+
+        distance = max(float(self.config.camera_distance), 1.0)
+        x = distance * np.sin(azimuth) * np.cos(elevation)
+        y = distance * np.sin(elevation)
+        z = distance * np.cos(azimuth) * np.cos(elevation)
+        eye = np.array([x, y, z], dtype=np.float64)
+
+        translation = frame.get("translation", [0.0, 0.0, 0.0])
+        target: NDArray[np.float64] = np.zeros(3, dtype=np.float64)
+        if isinstance(translation, (list, tuple)) and len(translation) == 3:
+            target = np.array(
+                [float(translation[0]), float(translation[1]), float(translation[2])],
+                dtype=np.float64,
+            )
+
+        forward = target - eye
+        forward_norm = float(np.linalg.norm(forward))
+        if forward_norm < 1e-6:
+            forward = np.array([0.0, 0.0, -1.0], dtype=np.float64)
+        else:
+            forward = forward / forward_norm
+
+        world_up = np.array([0.0, 1.0, 0.0], dtype=np.float64)
+        right = np.cross(forward, world_up)
+        right_norm = float(np.linalg.norm(right))
+        if right_norm < 1e-6:
+            right = np.array([1.0, 0.0, 0.0], dtype=np.float64)
+        else:
+            right = right / right_norm
+
+        up = np.cross(right, forward)
+        up_norm = float(np.linalg.norm(up))
+        if up_norm >= 1e-6:
+            up = up / up_norm
+
+        pose: NDArray[np.float64] = np.eye(4, dtype=np.float64)
+        pose[:3, 0] = right
+        pose[:3, 1] = up
+        pose[:3, 2] = -forward
+        pose[:3, 3] = eye
+        return cast(NDArray[np.float64], pose)
 
     def _build_mesh_image_stylized(
         self, frame: dict[str, Any], frame_index: int, total_frames: int

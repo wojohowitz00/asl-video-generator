@@ -1,12 +1,13 @@
 # Codebase Concerns
 
-Analysis Date: 2026-02-17 (updated after q7m completion)
+Analysis Date: 2026-02-18 (updated after r6p completion)
 
 ## Critical Functional Gaps
 
 - Software 3D mesh backend and artifact-level fidelity regression tests are now in place.
 - Optional `pyrender` backend path now has explicit routing + tested fallback behavior.
-- Native high-fidelity pyrender rendering implementation is still not enabled (current pyrender path delegates to deterministic software fallback).
+- Native pyrender offscreen rendering is now enabled for `mesh_backend=pyrender` when optional deps are installed.
+- CI/dev verification currently does not require `render3d` extras, so native pyrender coverage remains dependency-stubbed in unit tests.
 
 ## Reliability Gaps
 
@@ -16,7 +17,7 @@ Analysis Date: 2026-02-17 (updated after q7m completion)
 
 ## Documentation Drift
 
-- Primary README command drift was corrected in v0.2; documentation must stay aligned as v0.3 introduces additional rendering controls.
+- Primary README command drift was corrected in v0.2; docs now also include `uv sync --extra render3d` guidance for native pyrender path.
 
 ## Operational Notes
 

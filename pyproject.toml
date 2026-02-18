@@ -53,6 +53,11 @@ dev = [
     "ruff>=0.3.0",
     "mypy>=1.9.0",
 ]
+render3d = [
+    "pyrender>=0.1.45",
+    "trimesh>=4.0.0",
+    "PyOpenGL>=3.1.0",
+]
 
 [project.scripts]
 asl-generate = "asl_video_generator.cli:main"

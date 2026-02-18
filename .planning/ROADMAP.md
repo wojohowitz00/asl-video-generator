@@ -7,6 +7,7 @@
 - ✅ **v0.3 Rendering Fidelity + Code Health** — complete (2026-02-17)
 - ✅ **v0.4 Typing Hardening Tranche** — complete (2026-02-17)
 - ✅ **v0.5 Optional Pyrender Backend Hardening** — complete (2026-02-17)
+- ✅ **v0.6 Native Pyrender Backend MVP** — complete (2026-02-18)
 
 ## Phases
 
@@ -18,6 +19,7 @@
 - [x] **Phase 6: Repository Health Hardening** - lint/type debt reduction + tracking stability
 - [x] **Phase 7: Typing Hardening Tranche** - full-source mypy cleanup + CI type gate expansion
 - [x] **Phase 8: Optional Backend Hardening** - pyrender routing/fallback robustness + docs
+- [x] **Phase 9: Native Pyrender Backend MVP** - native offscreen pyrender render path + runtime fallback safety
 
 ## Phase Details
 
@@ -106,6 +108,20 @@ Plans / linked Beads issues:
 - [x] `asl-video-generator-q7m.2` - Add regression tests for pyrender fallback and routing behavior
 - [x] `asl-video-generator-q7m.3` - Document pyrender backend expectations in README/CLI help
 
+### Phase 9: Native Pyrender Backend MVP
+**Goal**: Replace placeholder pyrender delegation with a native offscreen render path while preserving deterministic fallback behavior.
+**Depends on**: Phase 8 complete
+**Requirements**: NPY-01, NPY-02, NPY-03
+**Success Criteria**:
+1. `mesh_backend=pyrender` executes native pyrender offscreen rendering when optional deps are present.
+2. Runtime failures in native pyrender path fall back safely to `software_3d` without pipeline interruption.
+3. Tests and operator docs cover native path behavior and optional `render3d` dependency install.
+
+Plans / linked Beads issues:
+- [x] `asl-video-generator-r6p.1` - Implement native pyrender offscreen render path in AvatarRenderer
+- [x] `asl-video-generator-r6p.2` - Add unit tests for native pyrender path and fallback-on-error behavior
+- [x] `asl-video-generator-r6p.3` - Add optional render3d dependency group + docs
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -118,3 +134,4 @@ Plans / linked Beads issues:
 | 6. Repository Health Hardening | 3/3 | Complete | 2026-02-17 |
 | 7. Typing Hardening Tranche | 4/4 | Complete | 2026-02-17 |
 | 8. Optional Backend Hardening | 3/3 | Complete | 2026-02-17 |
+| 9. Native Pyrender Backend MVP | 3/3 | Complete | 2026-02-18 |

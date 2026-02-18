@@ -65,7 +65,8 @@ def create_parser() -> argparse.ArgumentParser:
         default="software_3d",
         help=(
             "Mesh renderer backend (default: software_3d). "
-            "If pyrender dependencies are unavailable, falls back to software_3d."
+            "Use uv sync --extra render3d for native pyrender support. "
+            "If unavailable, falls back to software_3d."
         ),
     )
     parser.add_argument(

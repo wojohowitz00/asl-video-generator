@@ -42,6 +42,12 @@
 - [x] **PRY-02**: Fall back deterministically to `software_3d` when pyrender dependencies are unavailable.
 - [x] **PRY-03**: Add regression tests and operator docs for pyrender fallback behavior.
 
+## v0.6 Native Pyrender Backend MVP (Completed)
+
+- [x] **NPY-01**: Implement native offscreen pyrender rendering path for mesh frames.
+- [x] **NPY-02**: Keep deterministic software fallback when pyrender render path raises runtime errors.
+- [x] **NPY-03**: Add deterministic unit tests and optional dependency docs/packaging for native pyrender mode.
+
 ## Out of Scope (Current Milestone)
 
 - Re-architecting the entire pipeline into new infrastructure.
@@ -68,3 +74,6 @@
 | PRY-01 | Phase 8 | asl-video-generator-q7m.1 |
 | PRY-02 | Phase 8 | asl-video-generator-q7m.1 |
 | PRY-03 | Phase 8 | asl-video-generator-q7m.2, asl-video-generator-q7m.3 |
+| NPY-01 | Phase 9 | asl-video-generator-r6p.1 |
+| NPY-02 | Phase 9 | asl-video-generator-r6p.1, asl-video-generator-r6p.2 |
+| NPY-03 | Phase 9 | asl-video-generator-r6p.2, asl-video-generator-r6p.3 |

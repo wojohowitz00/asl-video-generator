@@ -223,3 +223,63 @@ def test_pyrender_backend_routes_to_pyrender_path_when_available(monkeypatch):
     renderer._build_mesh_image({}, 0, 1)
 
     assert pyrender_calls["count"] == 1
+
+
+def test_pyrender_backend_falls_back_when_native_renderer_errors(monkeypatch, capsys):
+    """pyrender backend should fall back to software_3d when native render fails."""
+    from PIL import Image
+
+    from asl_video_generator.avatar_renderer import AvatarRenderer, RenderConfig
+
+    renderer = AvatarRenderer(
+        RenderConfig(avatar_style="mesh", output_format="gif", mesh_backend="pyrender")
+    )
+
+    software_calls = {"count": 0}
+
+    def _failing_pyrender(*_args, **_kwargs):
+        raise RuntimeError("offscreen init failed")
+
+    def _fake_software(*_args, **_kwargs):
+        software_calls["count"] += 1
+        return Image.new("RGB", (24, 24), (200, 200, 200))
+
+    monkeypatch.setattr(renderer, "_is_pyrender_available", lambda: True)
+    monkeypatch.setattr(renderer, "_build_mesh_image_pyrender", _failing_pyrender)
+    monkeypatch.setattr(renderer, "_build_mesh_image_software_3d", _fake_software)
+
+    renderer._build_mesh_image({}, 0, 1)
+    renderer._build_mesh_image({}, 1, 1)
+
+    captured = capsys.readouterr()
+    assert software_calls["count"] == 2
+    assert captured.out.count("pyrender backend failed") == 1
+
+
+def test_build_mesh_image_pyrender_uses_native_rgb_array(monkeypatch):
+    """_build_mesh_image_pyrender should convert native RGB output to a PIL image."""
+    import numpy as np
+
+    from asl_video_generator.avatar_renderer import AvatarRenderer, RenderConfig
+
+    renderer = AvatarRenderer(
+        RenderConfig(avatar_style="mesh", output_format="gif", mesh_backend="pyrender")
+    )
+
+    vertices = np.array(
+        [
+            [-0.2, -0.2, 0.0],
+            [0.2, -0.2, 0.0],
+            [0.0, 0.25, 0.0],
+        ],
+        dtype=np.float64,
+    )
+    faces = np.array([[0, 1, 2]], dtype=np.int64)
+    rgb = np.full((18, 22, 3), 123, dtype=np.uint8)
+
+    monkeypatch.setattr(renderer, "_extract_or_synthesize_mesh", lambda _frame: (vertices, faces))
+    monkeypatch.setattr(renderer, "_render_with_pyrender", lambda _v, _f, _frame: rgb)
+
+    image = renderer._build_mesh_image_pyrender({}, 0, 1)
+
+    assert image.size == (22, 18)
