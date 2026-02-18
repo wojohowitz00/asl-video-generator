@@ -1,12 +1,13 @@
 # Codebase Concerns
 
-Analysis Date: 2026-02-18 (updated after 1ib completion)
+Analysis Date: 2026-02-18 (updated after 6tl completion)
 
 ## Critical Functional Gaps
 
 - Software 3D mesh backend and artifact-level fidelity regression tests are now in place.
 - Optional `pyrender` backend path now has explicit routing + tested fallback behavior.
 - Native pyrender offscreen rendering is now enabled for `mesh_backend=pyrender` when optional deps are installed.
+- AvatarRenderer now exposes telemetry for effective backend usage and pyrender fallback counts.
 - `scripts/render_videos.py` now routes mesh and stylized avatar-style runs to `render_mesh` (fixed from previous unconditional pose route).
 - CI now includes a dedicated `render3d_smoke` job to validate optional extras installation and dependency probe behavior.
 - Render3d smoke tests now include real offscreen render execution assertions with safe skip when GL context is unavailable.

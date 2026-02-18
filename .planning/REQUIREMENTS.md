@@ -73,6 +73,12 @@
 - [x] **E2E-01**: Render3d smoke suite covers `AvatarRenderer.render_mesh(...)` end-to-end output generation.
 - [x] **E2E-02**: End-to-end smoke coverage remains compatible with optional render3d environment differences.
 
+## v1.2 Pyrender Fallback Telemetry (Completed)
+
+- [x] **TEL-01**: AvatarRenderer exposes runtime telemetry for effective mesh backend usage.
+- [x] **TEL-02**: Telemetry tracks pyrender fallback event count for dependency-unavailable and runtime-error paths.
+- [x] **TEL-03**: Regression tests assert telemetry outcomes for pyrender success and fallback scenarios.
+
 ## Out of Scope (Current Milestone)
 
 - Re-architecting the entire pipeline into new infrastructure.
@@ -112,3 +118,6 @@
 | GLS-02 | Phase 13 | asl-dmv.1 |
 | E2E-01 | Phase 14 | asl-1ib.1 |
 | E2E-02 | Phase 14 | asl-1ib.1 |
+| TEL-01 | Phase 15 | asl-6tl.1 |
+| TEL-02 | Phase 15 | asl-6tl.1, asl-6tl.2 |
+| TEL-03 | Phase 15 | asl-6tl.2 |

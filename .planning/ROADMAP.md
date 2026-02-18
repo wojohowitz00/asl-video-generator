@@ -13,6 +13,7 @@
 - ✅ **v0.9 Render3D CI Smoke Coverage** — complete (2026-02-18)
 - ✅ **v1.0 Offscreen Smoke Execution** — complete (2026-02-18)
 - ✅ **v1.1 Render Mesh End-to-End Smoke** — complete (2026-02-18)
+- ✅ **v1.2 Pyrender Fallback Telemetry** — complete (2026-02-18)
 
 ## Phases
 
@@ -30,6 +31,7 @@
 - [x] **Phase 12: Render3D CI Smoke Coverage** - optional render3d dependency path validated in CI
 - [x] **Phase 13: Offscreen Smoke Execution** - render3d smoke includes real offscreen render assertion
 - [x] **Phase 14: Render Mesh End-to-End Smoke** - render3d smoke covers end-to-end render_mesh output generation
+- [x] **Phase 15: Pyrender Fallback Telemetry** - effective backend and fallback counts are observable at runtime
 
 ## Phase Details
 
@@ -200,6 +202,20 @@ Plans / linked Beads issues:
 - [x] `asl-1ib.1` - Add end-to-end render_mesh smoke test under render3d suite
 - [x] `asl-1ib.2` - Update planning docs for v1.1 render_mesh smoke tranche
 
+### Phase 15: Pyrender Fallback Telemetry
+**Goal**: Add runtime observability for effective mesh backend selection and pyrender fallback behavior.
+**Depends on**: Phase 9 complete
+**Requirements**: TEL-01, TEL-02, TEL-03
+**Success Criteria**:
+1. AvatarRenderer exposes telemetry for last used backend and per-backend usage counts.
+2. Pyrender fallback events are counted for unavailable dependencies and runtime render failures.
+3. Regression tests validate telemetry outcomes across success and fallback paths.
+
+Plans / linked Beads issues:
+- [x] `asl-6tl.1` - Track effective mesh backend usage in AvatarRenderer
+- [x] `asl-6tl.2` - Add regression tests for backend-usage telemetry
+- [x] `asl-6tl.3` - Update planning docs for v1.2 telemetry tranche
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -218,3 +234,4 @@ Plans / linked Beads issues:
 | 12. Render3D CI Smoke Coverage | 3/3 | Complete | 2026-02-18 |
 | 13. Offscreen Smoke Execution | 2/2 | Complete | 2026-02-18 |
 | 14. Render Mesh End-to-End Smoke | 2/2 | Complete | 2026-02-18 |
+| 15. Pyrender Fallback Telemetry | 3/3 | Complete | 2026-02-18 |

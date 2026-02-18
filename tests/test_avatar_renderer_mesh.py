@@ -195,6 +195,11 @@ def test_pyrender_backend_falls_back_to_software_when_unavailable(monkeypatch, c
     captured = capsys.readouterr()
     assert software_calls["count"] == 2
     assert captured.out.count("pyrender backend unavailable") == 1
+    telemetry = renderer.get_mesh_backend_telemetry()
+    assert telemetry["last_backend"] == "software_3d"
+    assert telemetry["counts"]["software_3d"] == 2
+    assert telemetry["counts"]["pyrender"] == 0
+    assert telemetry["pyrender_fallback_count"] == 2
 
 
 def test_pyrender_backend_routes_to_pyrender_path_when_available(monkeypatch):
@@ -223,6 +228,11 @@ def test_pyrender_backend_routes_to_pyrender_path_when_available(monkeypatch):
     renderer._build_mesh_image({}, 0, 1)
 
     assert pyrender_calls["count"] == 1
+    telemetry = renderer.get_mesh_backend_telemetry()
+    assert telemetry["last_backend"] == "pyrender"
+    assert telemetry["counts"]["pyrender"] == 1
+    assert telemetry["counts"]["software_3d"] == 0
+    assert telemetry["pyrender_fallback_count"] == 0
 
 
 def test_pyrender_backend_falls_back_when_native_renderer_errors(monkeypatch, capsys):
@@ -254,6 +264,11 @@ def test_pyrender_backend_falls_back_when_native_renderer_errors(monkeypatch, ca
     captured = capsys.readouterr()
     assert software_calls["count"] == 2
     assert captured.out.count("pyrender backend failed") == 1
+    telemetry = renderer.get_mesh_backend_telemetry()
+    assert telemetry["last_backend"] == "software_3d"
+    assert telemetry["counts"]["software_3d"] == 2
+    assert telemetry["counts"]["pyrender"] == 0
+    assert telemetry["pyrender_fallback_count"] == 2
 
 
 def test_build_mesh_image_pyrender_uses_native_rgb_array(monkeypatch):

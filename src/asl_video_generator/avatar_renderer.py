@@ -13,13 +13,21 @@ Supports multiple rendering backends:
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, cast
+from typing import TYPE_CHECKING, Any, Literal, TypedDict, cast
 
 import numpy as np
 from numpy.typing import NDArray
 
 if TYPE_CHECKING:
     from PIL.Image import Image as PILImage
+
+
+class MeshBackendTelemetry(TypedDict):
+    """Runtime telemetry for effective mesh backend usage."""
+
+    last_backend: Literal["stylized", "software_3d", "pyrender"] | None
+    counts: dict[str, int]
+    pyrender_fallback_count: int
 
 
 @dataclass
@@ -54,6 +62,13 @@ class AvatarRenderer:
         self.config = config or RenderConfig()
         self._pyrender_available: bool | None = None
         self._pyrender_fallback_warned = False
+        self._mesh_backend_last_used: Literal["stylized", "software_3d", "pyrender"] | None = None
+        self._mesh_backend_usage_counts: dict[str, int] = {
+            "stylized": 0,
+            "software_3d": 0,
+            "pyrender": 0,
+        }
+        self._pyrender_fallback_count = 0
     
     def render_poses(
         self,
@@ -248,24 +263,52 @@ class AvatarRenderer:
         """Dispatch mesh frame rendering to configured backend."""
         backend = self.config.mesh_backend
         if backend == "stylized":
+            self._record_mesh_backend_usage("stylized")
             return self._build_mesh_image_stylized(frame, frame_index, total_frames)
         if backend == "pyrender":
             if self._is_pyrender_available():
                 try:
-                    return self._build_mesh_image_pyrender(frame, frame_index, total_frames)
+                    img = self._build_mesh_image_pyrender(frame, frame_index, total_frames)
+                    self._record_mesh_backend_usage("pyrender")
+                    return img
                 except Exception as exc:
+                    self._record_pyrender_fallback()
                     self._warn_pyrender_fallback(
                         "pyrender backend failed "
                         f"({exc}); falling back to software_3d mesh renderer."
                     )
+                    self._record_mesh_backend_usage("software_3d")
                     return self._build_mesh_image_software_3d(frame, frame_index, total_frames)
+            self._record_pyrender_fallback()
             self._warn_pyrender_fallback(
                 "pyrender backend unavailable; falling back to software_3d mesh renderer."
             )
+            self._record_mesh_backend_usage("software_3d")
             return self._build_mesh_image_software_3d(frame, frame_index, total_frames)
         if backend == "software_3d":
+            self._record_mesh_backend_usage("software_3d")
             return self._build_mesh_image_software_3d(frame, frame_index, total_frames)
+        self._record_mesh_backend_usage("stylized")
         return self._build_mesh_image_stylized(frame, frame_index, total_frames)
+
+    def _record_mesh_backend_usage(
+        self, backend: Literal["stylized", "software_3d", "pyrender"]
+    ) -> None:
+        """Track effective mesh backend used for a rendered frame."""
+        self._mesh_backend_last_used = backend
+        self._mesh_backend_usage_counts[backend] += 1
+
+    def _record_pyrender_fallback(self) -> None:
+        """Track pyrender fallback events across frames."""
+        self._pyrender_fallback_count += 1
+
+    def get_mesh_backend_telemetry(self) -> MeshBackendTelemetry:
+        """Return mesh backend telemetry for observability and tests."""
+        return {
+            "last_backend": self._mesh_backend_last_used,
+            "counts": dict(self._mesh_backend_usage_counts),
+            "pyrender_fallback_count": self._pyrender_fallback_count,
+        }
 
     def _warn_pyrender_fallback(self, message: str) -> None:
         """Emit one-time warning when pyrender backend falls back to software."""
