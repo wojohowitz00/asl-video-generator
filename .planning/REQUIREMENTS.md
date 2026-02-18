@@ -79,6 +79,11 @@
 - [x] **TEL-02**: Telemetry tracks pyrender fallback event count for dependency-unavailable and runtime-error paths.
 - [x] **TEL-03**: Regression tests assert telemetry outcomes for pyrender success and fallback scenarios.
 
+## v1.3 Pyrender Camera-Angle Regression (Completed)
+
+- [x] **CAM-01**: Render3d smoke suite asserts pyrender backend output changes across different camera angles.
+- [x] **CAM-02**: Camera-angle regression test skips safely when native pyrender path is unavailable at runtime.
+
 ## Out of Scope (Current Milestone)
 
 - Re-architecting the entire pipeline into new infrastructure.
@@ -121,3 +126,5 @@
 | TEL-01 | Phase 15 | asl-6tl.1 |
 | TEL-02 | Phase 15 | asl-6tl.1, asl-6tl.2 |
 | TEL-03 | Phase 15 | asl-6tl.2 |
+| CAM-01 | Phase 16 | asl-95a.1 |
+| CAM-02 | Phase 16 | asl-95a.1 |

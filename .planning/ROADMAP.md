@@ -14,6 +14,7 @@
 - ✅ **v1.0 Offscreen Smoke Execution** — complete (2026-02-18)
 - ✅ **v1.1 Render Mesh End-to-End Smoke** — complete (2026-02-18)
 - ✅ **v1.2 Pyrender Fallback Telemetry** — complete (2026-02-18)
+- ✅ **v1.3 Pyrender Camera-Angle Regression** — complete (2026-02-18)
 
 ## Phases
 
@@ -32,6 +33,7 @@
 - [x] **Phase 13: Offscreen Smoke Execution** - render3d smoke includes real offscreen render assertion
 - [x] **Phase 14: Render Mesh End-to-End Smoke** - render3d smoke covers end-to-end render_mesh output generation
 - [x] **Phase 15: Pyrender Fallback Telemetry** - effective backend and fallback counts are observable at runtime
+- [x] **Phase 16: Pyrender Camera-Angle Regression** - render3d smoke validates camera-angle sensitivity for pyrender outputs
 
 ## Phase Details
 
@@ -216,6 +218,19 @@ Plans / linked Beads issues:
 - [x] `asl-6tl.2` - Add regression tests for backend-usage telemetry
 - [x] `asl-6tl.3` - Update planning docs for v1.2 telemetry tranche
 
+### Phase 16: Pyrender Camera-Angle Regression
+**Goal**: Add regression coverage proving pyrender backend artifacts respond to camera-angle changes.
+**Depends on**: Phase 9 complete
+**Requirements**: CAM-01, CAM-02
+**Success Criteria**:
+1. Smoke tests compare pyrender `render_mesh` outputs at multiple camera angles.
+2. Camera-angle regression uses runtime-safe skip behavior when native path is unavailable.
+3. Full repository quality gates remain green.
+
+Plans / linked Beads issues:
+- [x] `asl-95a.1` - Add pyrender camera-angle artifact regression test
+- [x] `asl-95a.2` - Update planning docs for v1.3 camera-angle regression
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -235,3 +250,4 @@ Plans / linked Beads issues:
 | 13. Offscreen Smoke Execution | 2/2 | Complete | 2026-02-18 |
 | 14. Render Mesh End-to-End Smoke | 2/2 | Complete | 2026-02-18 |
 | 15. Pyrender Fallback Telemetry | 3/3 | Complete | 2026-02-18 |
+| 16. Pyrender Camera-Angle Regression | 2/2 | Complete | 2026-02-18 |

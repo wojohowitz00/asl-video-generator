@@ -1,6 +1,6 @@
 # Codebase Concerns
 
-Analysis Date: 2026-02-18 (updated after 6tl completion)
+Analysis Date: 2026-02-18 (updated after 95a completion)
 
 ## Critical Functional Gaps
 
@@ -12,6 +12,7 @@ Analysis Date: 2026-02-18 (updated after 6tl completion)
 - CI now includes a dedicated `render3d_smoke` job to validate optional extras installation and dependency probe behavior.
 - Render3d smoke tests now include real offscreen render execution assertions with safe skip when GL context is unavailable.
 - Render3d smoke suite now also validates end-to-end `render_mesh` output generation for pyrender backend path.
+- Render3d smoke suite now includes camera-angle artifact regression coverage for pyrender backend path.
 
 ## Reliability Gaps
 
