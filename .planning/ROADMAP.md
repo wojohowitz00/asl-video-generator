@@ -12,6 +12,7 @@
 - ✅ **v0.8 Stylized Routing Completion** — complete (2026-02-18)
 - ✅ **v0.9 Render3D CI Smoke Coverage** — complete (2026-02-18)
 - ✅ **v1.0 Offscreen Smoke Execution** — complete (2026-02-18)
+- ✅ **v1.1 Render Mesh End-to-End Smoke** — complete (2026-02-18)
 
 ## Phases
 
@@ -28,6 +29,7 @@
 - [x] **Phase 11: Stylized Routing Completion** - stylized avatar-style batch runs invoke mesh renderer path
 - [x] **Phase 12: Render3D CI Smoke Coverage** - optional render3d dependency path validated in CI
 - [x] **Phase 13: Offscreen Smoke Execution** - render3d smoke includes real offscreen render assertion
+- [x] **Phase 14: Render Mesh End-to-End Smoke** - render3d smoke covers end-to-end render_mesh output generation
 
 ## Phase Details
 
@@ -185,6 +187,19 @@ Plans / linked Beads issues:
 - [x] `asl-dmv.1` - Add safe-skip offscreen render smoke test
 - [x] `asl-dmv.2` - Update planning docs for v1.0 offscreen smoke tranche
 
+### Phase 14: Render Mesh End-to-End Smoke
+**Goal**: Extend render3d smoke coverage to include `AvatarRenderer.render_mesh(...)` output artifact generation.
+**Depends on**: Phase 13 complete
+**Requirements**: E2E-01, E2E-02
+**Success Criteria**:
+1. Smoke tests generate a real output artifact through `render_mesh` with `mesh_backend=pyrender`.
+2. Coverage remains stable across environments by relying on existing runtime fallback behavior.
+3. Full repository quality gates remain green.
+
+Plans / linked Beads issues:
+- [x] `asl-1ib.1` - Add end-to-end render_mesh smoke test under render3d suite
+- [x] `asl-1ib.2` - Update planning docs for v1.1 render_mesh smoke tranche
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -202,3 +217,4 @@ Plans / linked Beads issues:
 | 11. Stylized Routing Completion | 3/3 | Complete | 2026-02-18 |
 | 12. Render3D CI Smoke Coverage | 3/3 | Complete | 2026-02-18 |
 | 13. Offscreen Smoke Execution | 2/2 | Complete | 2026-02-18 |
+| 14. Render Mesh End-to-End Smoke | 2/2 | Complete | 2026-02-18 |

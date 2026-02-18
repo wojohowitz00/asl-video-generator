@@ -1,6 +1,6 @@
 # Codebase Concerns
 
-Analysis Date: 2026-02-18 (updated after dmv completion)
+Analysis Date: 2026-02-18 (updated after 1ib completion)
 
 ## Critical Functional Gaps
 
@@ -10,6 +10,7 @@ Analysis Date: 2026-02-18 (updated after dmv completion)
 - `scripts/render_videos.py` now routes mesh and stylized avatar-style runs to `render_mesh` (fixed from previous unconditional pose route).
 - CI now includes a dedicated `render3d_smoke` job to validate optional extras installation and dependency probe behavior.
 - Render3d smoke tests now include real offscreen render execution assertions with safe skip when GL context is unavailable.
+- Render3d smoke suite now also validates end-to-end `render_mesh` output generation for pyrender backend path.
 
 ## Reliability Gaps
 

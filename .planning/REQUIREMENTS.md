@@ -68,6 +68,11 @@
 - [x] **GLS-01**: Render3d smoke coverage includes actual offscreen pyrender render execution assertion.
 - [x] **GLS-02**: Offscreen smoke assertion skips safely when GL context is unavailable in the environment.
 
+## v1.1 Render Mesh End-to-End Smoke (Completed)
+
+- [x] **E2E-01**: Render3d smoke suite covers `AvatarRenderer.render_mesh(...)` end-to-end output generation.
+- [x] **E2E-02**: End-to-end smoke coverage remains compatible with optional render3d environment differences.
+
 ## Out of Scope (Current Milestone)
 
 - Re-architecting the entire pipeline into new infrastructure.
@@ -105,3 +110,5 @@
 | R3D-02 | Phase 12 | asl-cwy.2 |
 | GLS-01 | Phase 13 | asl-dmv.1 |
 | GLS-02 | Phase 13 | asl-dmv.1 |
+| E2E-01 | Phase 14 | asl-1ib.1 |
+| E2E-02 | Phase 14 | asl-1ib.1 |

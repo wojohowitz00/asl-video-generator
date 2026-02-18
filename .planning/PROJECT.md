@@ -18,7 +18,7 @@ Provide a reproducible path from text input to ASL-compatible video assets that 
 
 - Baseline pipeline implemented in Python package + CLI scripts.
 - Curriculum and content-manifest publishing workflow is present.
-- Unit/integration tests currently passing locally (`50 passed`).
+- Unit/integration tests currently passing locally (`51 passed`).
 - v0.2 milestone backlog (`asl-video-generator-cxv`) is complete and closed.
 - v0.3 milestone backlog (`asl-video-generator-v5u`) is complete and closed.
 - v0.4 typing tranche (`asl-video-generator-t9r`) is complete and closed.
@@ -28,13 +28,14 @@ Provide a reproducible path from text input to ASL-compatible video assets that 
 - v0.8 stylized routing completion tranche (`asl-o3d`) is complete and closed.
 - v0.9 render3d CI smoke coverage tranche (`asl-cwy`) is complete and closed.
 - v1.0 offscreen render smoke execution tranche (`asl-dmv`) is complete and closed.
+- v1.1 render_mesh end-to-end smoke tranche (`asl-1ib`) is complete and closed.
 - CI workflow now runs pytest + repo-wide Ruff (`src/scripts/tests`) + full mypy scope for `src/asl_video_generator`.
 - Beads is configured for stable direct SQLite usage in this environment (`.beads/config.yaml`).
 
 ## Next Milestone Goals
 
 - Evaluate visual/performance quality of native `pyrender` path against software renderer baseline.
-- Define next feature backlog for renderer robustness and quality after v1.0 offscreen smoke completion.
+- Define next feature backlog for renderer robustness and quality after v1.1 end-to-end smoke completion.
 
 ## Requirements
 
@@ -46,7 +47,7 @@ See `.planning/REQUIREMENTS.md`.
 - CLI entry points in `pyproject.toml`: `asl-generate`, `asl-translate`, `asl-pose`, `asl-render`.
 - Core modules are under `src/asl_video_generator/`.
 - Content pipeline scripts are under `scripts/`.
-- Current Beads backlog is empty (all known work closed through v1.0).
+- Current Beads backlog is empty (all known work closed through v1.1).
 
 ## Constraints
 
@@ -70,6 +71,7 @@ See `.planning/REQUIREMENTS.md`.
 | Run v0.8 stylized routing completion tranche | Ensure stylized avatar-style batch renders also invoke mesh renderer path | Completed (`o3d.1`-`o3d.3`) |
 | Run v0.9 render3d CI smoke tranche | Validate optional render3d dependency path continuously in CI with dedicated smoke coverage | Completed (`cwy.1`-`cwy.3`) |
 | Run v1.0 offscreen smoke execution tranche | Add real offscreen pyrender execution smoke assertion with safe skip on missing GL context | Completed (`dmv.1`-`dmv.2`) |
+| Run v1.1 render_mesh E2E smoke tranche | Add render_mesh end-to-end output-generation smoke coverage for pyrender backend path | Completed (`1ib.1`-`1ib.2`) |
 
 ---
 *Last updated: 2026-02-18*
