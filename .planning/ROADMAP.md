@@ -15,6 +15,7 @@
 - ✅ **v1.1 Render Mesh End-to-End Smoke** — complete (2026-02-18)
 - ✅ **v1.2 Pyrender Fallback Telemetry** — complete (2026-02-18)
 - ✅ **v1.3 Pyrender Camera-Angle Regression** — complete (2026-02-18)
+- ✅ **v1.4 Mesh Backend Benchmark Baseline** — complete (2026-02-18)
 
 ## Phases
 
@@ -34,6 +35,7 @@
 - [x] **Phase 14: Render Mesh End-to-End Smoke** - render3d smoke covers end-to-end render_mesh output generation
 - [x] **Phase 15: Pyrender Fallback Telemetry** - effective backend and fallback counts are observable at runtime
 - [x] **Phase 16: Pyrender Camera-Angle Regression** - render3d smoke validates camera-angle sensitivity for pyrender outputs
+- [x] **Phase 17: Mesh Backend Benchmark Baseline** - reproducible backend runtime benchmark script and report are available
 
 ## Phase Details
 
@@ -231,6 +233,20 @@ Plans / linked Beads issues:
 - [x] `asl-95a.1` - Add pyrender camera-angle artifact regression test
 - [x] `asl-95a.2` - Update planning docs for v1.3 camera-angle regression
 
+### Phase 17: Mesh Backend Benchmark Baseline
+**Goal**: Add reproducible local benchmarking for software_3d vs pyrender requested backends.
+**Depends on**: Phase 15 complete
+**Requirements**: BEN-01, BEN-02, BEN-03
+**Success Criteria**:
+1. A benchmark script runs both backend requests on fixed synthetic motion.
+2. JSON report includes timing summary and effective backend telemetry fields.
+3. Script behavior has automated regression coverage.
+
+Plans / linked Beads issues:
+- [x] `asl-atw.1` - Add benchmark_mesh_backends script
+- [x] `asl-atw.2` - Add tests for benchmark script behavior
+- [x] `asl-atw.3` - Document benchmark workflow + update planning
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -251,3 +267,4 @@ Plans / linked Beads issues:
 | 14. Render Mesh End-to-End Smoke | 2/2 | Complete | 2026-02-18 |
 | 15. Pyrender Fallback Telemetry | 3/3 | Complete | 2026-02-18 |
 | 16. Pyrender Camera-Angle Regression | 2/2 | Complete | 2026-02-18 |
+| 17. Mesh Backend Benchmark Baseline | 3/3 | Complete | 2026-02-18 |

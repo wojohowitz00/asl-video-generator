@@ -18,7 +18,7 @@ Provide a reproducible path from text input to ASL-compatible video assets that 
 
 - Baseline pipeline implemented in Python package + CLI scripts.
 - Curriculum and content-manifest publishing workflow is present.
-- Unit/integration tests currently passing locally (`51 passed`).
+- Unit/integration tests currently passing locally (`55 passed`).
 - v0.2 milestone backlog (`asl-video-generator-cxv`) is complete and closed.
 - v0.3 milestone backlog (`asl-video-generator-v5u`) is complete and closed.
 - v0.4 typing tranche (`asl-video-generator-t9r`) is complete and closed.
@@ -31,13 +31,14 @@ Provide a reproducible path from text input to ASL-compatible video assets that 
 - v1.1 render_mesh end-to-end smoke tranche (`asl-1ib`) is complete and closed.
 - v1.2 pyrender fallback telemetry tranche (`asl-6tl`) is complete and closed.
 - v1.3 pyrender camera-angle regression tranche (`asl-95a`) is complete and closed.
+- v1.4 mesh backend benchmark baseline tranche (`asl-atw`) is complete and closed.
 - CI workflow now runs pytest + repo-wide Ruff (`src/scripts/tests`) + full mypy scope for `src/asl_video_generator`.
 - Beads is configured for stable direct SQLite usage in this environment (`.beads/config.yaml`).
 
 ## Next Milestone Goals
 
 - Evaluate visual/performance quality of native `pyrender` path against software renderer baseline.
-- Define next feature backlog for renderer robustness and quality after v1.3 camera-angle regression coverage.
+- Define next feature backlog for renderer robustness and quality after v1.4 benchmark baseline.
 
 ## Requirements
 
@@ -49,7 +50,7 @@ See `.planning/REQUIREMENTS.md`.
 - CLI entry points in `pyproject.toml`: `asl-generate`, `asl-translate`, `asl-pose`, `asl-render`.
 - Core modules are under `src/asl_video_generator/`.
 - Content pipeline scripts are under `scripts/`.
-- Current Beads backlog is empty (all known work closed through v1.3).
+- Current Beads backlog is empty (all known work closed through v1.4).
 
 ## Constraints
 
@@ -76,6 +77,7 @@ See `.planning/REQUIREMENTS.md`.
 | Run v1.1 render_mesh E2E smoke tranche | Add render_mesh end-to-end output-generation smoke coverage for pyrender backend path | Completed (`1ib.1`-`1ib.2`) |
 | Run v1.2 fallback telemetry tranche | Add runtime telemetry for effective backend usage and pyrender fallback counts with regression assertions | Completed (`6tl.1`-`6tl.3`) |
 | Run v1.3 camera-angle regression tranche | Add pyrender backend artifact regression for camera-angle sensitivity with runtime-safe skip behavior | Completed (`95a.1`-`95a.2`) |
+| Run v1.4 benchmark baseline tranche | Add reproducible software_3d vs pyrender runtime benchmark script with JSON report output and test coverage | Completed (`atw.1`-`atw.3`) |
 
 ---
 *Last updated: 2026-02-18*

@@ -47,6 +47,21 @@ uv run asl-render ./output/library.poses.json --output ./output/library.mp4 --mo
 The learning app should set `EXPO_PUBLIC_CONTENT_MANIFEST_URL` to the uploaded
 `manifest.json` URL.
 
+## Benchmarking Mesh Backends
+
+Run a local runtime baseline on fixed synthetic motion for both `software_3d`
+and `pyrender` requested backends:
+
+```bash
+uv run python scripts/benchmark_mesh_backends.py --output ./output/benchmarks/mesh_backend_benchmark.json
+```
+
+For native pyrender path benchmarking, install optional extras first:
+
+```bash
+uv sync --extra render3d
+```
+
 ## Components
 
 - `gloss_translator.py` - LLM-based English→ASL gloss translation

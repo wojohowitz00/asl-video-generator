@@ -84,6 +84,12 @@
 - [x] **CAM-01**: Render3d smoke suite asserts pyrender backend output changes across different camera angles.
 - [x] **CAM-02**: Camera-angle regression test skips safely when native pyrender path is unavailable at runtime.
 
+## v1.4 Mesh Backend Benchmark Baseline (Completed)
+
+- [x] **BEN-01**: Add benchmark script for software_3d and pyrender requested backends on fixed sample motion.
+- [x] **BEN-02**: Benchmark report includes timing summary and effective backend telemetry fields.
+- [x] **BEN-03**: Add regression tests for benchmark script parser defaults and report generation behavior.
+
 ## Out of Scope (Current Milestone)
 
 - Re-architecting the entire pipeline into new infrastructure.
@@ -128,3 +134,6 @@
 | TEL-03 | Phase 15 | asl-6tl.2 |
 | CAM-01 | Phase 16 | asl-95a.1 |
 | CAM-02 | Phase 16 | asl-95a.1 |
+| BEN-01 | Phase 17 | asl-atw.1 |
+| BEN-02 | Phase 17 | asl-atw.1, asl-atw.2 |
+| BEN-03 | Phase 17 | asl-atw.2 |
