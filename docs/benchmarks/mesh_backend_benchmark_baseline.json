@@ -1,0 +1,44 @@
+{
+  "generated_at": "2026-02-18T20:48:29.720981+00:00",
+  "config": {
+    "width": 256,
+    "height": 256,
+    "fps": 12,
+    "frames": 8,
+    "repeats": 3
+  },
+  "benchmarks": {
+    "software_3d": {
+      "requested_backend": "software_3d",
+      "effective_last_backend": "software_3d",
+      "effective_counts": {
+        "stylized": 0,
+        "software_3d": 8,
+        "pyrender": 0
+      },
+      "pyrender_fallback_count": 0,
+      "timings": {
+        "min_seconds": 0.0362305830931291,
+        "mean_seconds": 0.054938138695433736,
+        "max_seconds": 0.09231300000101328
+      },
+      "output_exists": true
+    },
+    "pyrender": {
+      "requested_backend": "pyrender",
+      "effective_last_backend": "pyrender",
+      "effective_counts": {
+        "stylized": 0,
+        "software_3d": 0,
+        "pyrender": 8
+      },
+      "pyrender_fallback_count": 0,
+      "timings": {
+        "min_seconds": 0.6001127919880673,
+        "mean_seconds": 0.9972334719883899,
+        "max_seconds": 1.716016040998511
+      },
+      "output_exists": true
+    }
+  }
+}

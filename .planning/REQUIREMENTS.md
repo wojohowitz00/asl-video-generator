@@ -90,6 +90,12 @@
 - [x] **BEN-02**: Benchmark report includes timing summary and effective backend telemetry fields.
 - [x] **BEN-03**: Add regression tests for benchmark script parser defaults and report generation behavior.
 
+## v1.5 Benchmark Baseline Artifact Trendability (Completed)
+
+- [x] **ART-01**: Commit baseline benchmark artifact under `docs/benchmarks/`.
+- [x] **ART-02**: Add artifact schema validation test to preserve report comparability over time.
+- [x] **ART-03**: Document rerun and trend comparison workflow in README.
+
 ## Out of Scope (Current Milestone)
 
 - Re-architecting the entire pipeline into new infrastructure.
@@ -137,3 +143,6 @@
 | BEN-01 | Phase 17 | asl-atw.1 |
 | BEN-02 | Phase 17 | asl-atw.1, asl-atw.2 |
 | BEN-03 | Phase 17 | asl-atw.2 |
+| ART-01 | Phase 18 | asl-2la.1 |
+| ART-02 | Phase 18 | asl-2la.2 |
+| ART-03 | Phase 18 | asl-2la.3 |

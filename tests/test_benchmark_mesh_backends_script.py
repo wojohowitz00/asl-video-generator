@@ -94,3 +94,60 @@ def test_main_writes_benchmark_json(monkeypatch, tmp_path):
     payload = json.loads(output_path.read_text())
     assert "software_3d" in payload["benchmarks"]
     assert "pyrender" in payload["benchmarks"]
+
+
+def test_main_creates_output_parent_directory(monkeypatch, tmp_path):
+    """main should create output parent directory when missing."""
+    module = _load_benchmark_module()
+
+    def _fake_run_backend_benchmark(**kwargs):
+        backend = kwargs["backend"]
+        return {
+            "requested_backend": backend,
+            "effective_last_backend": backend,
+            "timings": {"min_seconds": 0.1, "mean_seconds": 0.1, "max_seconds": 0.1},
+            "pyrender_fallback_count": 0,
+            "output_exists": True,
+        }
+
+    output_path = tmp_path / "nested" / "bench.json"
+    monkeypatch.setattr(module, "run_backend_benchmark", _fake_run_backend_benchmark)
+
+    module.main(["--output", str(output_path), "--repeats", "1"])
+
+    assert output_path.exists()
+
+
+def test_run_backend_benchmark_creates_missing_workdir(monkeypatch, tmp_path):
+    """run_backend_benchmark should create missing workdir directory if needed."""
+    module = _load_benchmark_module()
+
+    class _FakeRenderer:
+        def __init__(self, config):
+            self._backend = config.mesh_backend
+
+        def render_mesh(self, _motion_path, output_path):
+            output_path.write_bytes(b"GIF89a")
+            return output_path
+
+        def get_mesh_backend_telemetry(self):
+            return {
+                "last_backend": self._backend,
+                "counts": {"stylized": 0, "software_3d": 1, "pyrender": 0},
+                "pyrender_fallback_count": 0,
+            }
+
+    monkeypatch.setattr(module, "AvatarRenderer", _FakeRenderer)
+    workdir = tmp_path / "missing_dir"
+
+    result = module.run_backend_benchmark(
+        backend="software_3d",
+        repeats=1,
+        width=64,
+        height=64,
+        fps=12,
+        sample_motion=module.build_sample_motion(num_frames=2, fps=12),
+        workdir=workdir,
+    )
+
+    assert result["output_exists"] is True

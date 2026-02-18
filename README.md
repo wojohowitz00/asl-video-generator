@@ -62,6 +62,14 @@ For native pyrender path benchmarking, install optional extras first:
 uv sync --extra render3d
 ```
 
+Committed baseline artifact:
+- `docs/benchmarks/mesh_backend_benchmark_baseline.json`
+
+Trendability tip:
+- Re-run on the same machine/settings, save to a dated file (for example
+  `docs/benchmarks/mesh_backend_benchmark_2026-02-18.json`), then compare the
+  `benchmarks.*.timings` fields against the baseline.
+
 ## Components
 
 - `gloss_translator.py` - LLM-based English→ASL gloss translation

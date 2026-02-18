@@ -16,6 +16,7 @@
 - ✅ **v1.2 Pyrender Fallback Telemetry** — complete (2026-02-18)
 - ✅ **v1.3 Pyrender Camera-Angle Regression** — complete (2026-02-18)
 - ✅ **v1.4 Mesh Backend Benchmark Baseline** — complete (2026-02-18)
+- ✅ **v1.5 Benchmark Baseline Artifact Trendability** — complete (2026-02-18)
 
 ## Phases
 
@@ -36,6 +37,7 @@
 - [x] **Phase 15: Pyrender Fallback Telemetry** - effective backend and fallback counts are observable at runtime
 - [x] **Phase 16: Pyrender Camera-Angle Regression** - render3d smoke validates camera-angle sensitivity for pyrender outputs
 - [x] **Phase 17: Mesh Backend Benchmark Baseline** - reproducible backend runtime benchmark script and report are available
+- [x] **Phase 18: Benchmark Artifact Trendability** - committed baseline artifact and schema validator support repeatable comparisons
 
 ## Phase Details
 
@@ -247,6 +249,20 @@ Plans / linked Beads issues:
 - [x] `asl-atw.2` - Add tests for benchmark script behavior
 - [x] `asl-atw.3` - Document benchmark workflow + update planning
 
+### Phase 18: Benchmark Artifact Trendability
+**Goal**: Make backend benchmark runs easy to repeat and compare over time.
+**Depends on**: Phase 17 complete
+**Requirements**: ART-01, ART-02, ART-03
+**Success Criteria**:
+1. A baseline benchmark artifact is committed under `docs/benchmarks/`.
+2. A test validates artifact schema/keys to keep future reports comparable.
+3. README describes rerun and trend comparison workflow.
+
+Plans / linked Beads issues:
+- [x] `asl-2la.1` - Generate and commit benchmark baseline JSON artifact
+- [x] `asl-2la.2` - Add benchmark artifact schema validation test
+- [x] `asl-2la.3` - Document benchmark trend workflow + update planning
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -268,3 +284,4 @@ Plans / linked Beads issues:
 | 15. Pyrender Fallback Telemetry | 3/3 | Complete | 2026-02-18 |
 | 16. Pyrender Camera-Angle Regression | 2/2 | Complete | 2026-02-18 |
 | 17. Mesh Backend Benchmark Baseline | 3/3 | Complete | 2026-02-18 |
+| 18. Benchmark Artifact Trendability | 3/3 | Complete | 2026-02-18 |

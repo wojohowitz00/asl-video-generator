@@ -1,6 +1,6 @@
 # Codebase Concerns
 
-Analysis Date: 2026-02-18 (updated after atw completion)
+Analysis Date: 2026-02-18 (updated after 2la completion)
 
 ## Critical Functional Gaps
 
@@ -14,6 +14,7 @@ Analysis Date: 2026-02-18 (updated after atw completion)
 - Render3d smoke suite now also validates end-to-end `render_mesh` output generation for pyrender backend path.
 - Render3d smoke suite now includes camera-angle artifact regression coverage for pyrender backend path.
 - Benchmark baseline script is now available; benchmark values remain environment-dependent and should be interpreted comparatively on the same machine.
+- A committed benchmark baseline artifact and schema validator test now support repeatable trend comparisons across runs.
 
 ## Reliability Gaps
 

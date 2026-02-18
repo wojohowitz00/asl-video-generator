@@ -87,6 +87,9 @@ def run_backend_benchmark(
         "pyrender_fallback_count": 0,
     }
 
+    if workdir is not None:
+        workdir.mkdir(parents=True, exist_ok=True)
+
     with TemporaryDirectory(dir=workdir) as tmpdir:
         tmp_path = Path(tmpdir)
         motion_path = tmp_path / "motion.json"
